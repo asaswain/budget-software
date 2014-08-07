@@ -1,7 +1,7 @@
 Budget Software
 
 Outline:
-This software program is designed to allow you to enter a list of income and expenses and keep track of a motnhly budget 
+This software program is designed to allow you to enter a list of income and expenses and keep track of a monthly budget 
 
 Design:
 I started writing this program because I got tired of using a spreadsheet to keep track of my expenses and manage my monthly budgets.
