@@ -39,7 +39,7 @@ public class SingleEntry extends Entry implements Comparable<SingleEntry>{
 	}
 
 	/**
-	 * constructor using data for a single entry (with date as seperate integers)
+	 * constructor using data for a single entry (with date as separate integers)
 	 */
 	public SingleEntry(int newDay, int newMonth, int newYear, Type newType, String newDesc, double newAmount) {
 		date = new JDateTime(newYear,newMonth,newDay);
