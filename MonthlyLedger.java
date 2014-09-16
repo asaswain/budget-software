@@ -8,7 +8,10 @@ import java.util.Set;
 import jodd.datetime.JDateTime;
 import budget_program.SingleEntry;
 
-// to do: implement installment and repeating entries methods
+// 09/16/2014 MASTER TO DO LIST: 
+//
+//   finish writing Javadoc for methods
+//   implement installment and repeating entries methods
 
 /**
  * This is a ledger with all the financial information for a single month, including:
@@ -34,7 +37,10 @@ public class MonthlyLedger {
 	private int year;
 
 	/**
-	 * This is a blank constructor
+	 * This builds a ledger for a specific month and year
+	 * 
+	 * @param newMonth - the month to build the ledger for
+	 * @param newYear - the year to build the ledger for
 	 */
 	public MonthlyLedger(int newMonth, int newYear) {
 		datedEntries = new DatedList();
@@ -43,8 +49,14 @@ public class MonthlyLedger {
 		month = newMonth;
 		year = newYear;
 	}
-	
-	// constructor with default account list
+
+	/**
+	 * This builds a ledger for a specific month and year with a default budget
+	 * 
+	 * @param newMonth - the month to build the ledger for
+	 * @param newYear - the year to build the ledger for
+	 * @param defaultBudget - tje default budget to use in this Monthly Ledger
+	 */
 	public MonthlyLedger(int newMonth, int newYear, BudgetAmtList defaultBudget) {
 		datedEntries = new DatedList();
 		//repeatingEntries = new EntryList();
@@ -53,36 +65,47 @@ public class MonthlyLedger {
 		year = newYear;
 	}
 
-	// number of dated entries in this month
-	public int getDatedEntryCount() {
+	/**
+	 * This method returns the number of Single Entries in all the days in this month
+	 * 
+	 * @return an integer of the number of single entries in this month
+	 */
+	public int getSingleEntryCount() {
 		return datedEntries.size();
 	}
-	
+
 	// add a single entry to the dated expense list
 	public void addSingleEntry(SingleEntry newEntry) {
 		// make sure entry date is valid before adding entry
 		if (newEntry.getDate().getMonth() != month) {
-			throw new IllegalArgumentException("Entry month does not match budget month.");
+			throw new IllegalArgumentException("Entry month does not match general ledger month.");
 		}
 		if (newEntry.getDate().getYear() != year) {
-			throw new IllegalArgumentException("Entry year does not match " + year);
+			throw new IllegalArgumentException("Entry year does not match general ledger year.");
 		} 
 		datedEntries.addEntry(newEntry);		
 	}
 
 	// delete a single entry from the dated expense list
-	public void deleteSingleEntry(SingleEntry newEntry) {
-		datedEntries.deleteEntry(newEntry);
+	public void deleteSingleEntry(SingleEntry delEntry) {
+		datedEntries.deleteEntry(delEntry);
 	}
 
 	// update a single entry on the dated expense list
 	public void updateSingleEntry(SingleEntry newEntry, SingleEntry oldEntry)  {
-		// make sure entry date is valid before updating entry
+		// make sure old entry date is valid before updating entry
+		if (oldEntry.getDate().getMonth() != month) {
+			throw new IllegalArgumentException("Old entry month does not match general ledger month");
+		}
+		if (oldEntry.getDate().getYear() != year) {
+			throw new IllegalArgumentException("Old entry year does not match general ledger year.");
+		}	
+		// make sure new entry date is valid before updating entry
 		if (newEntry.getDate().getMonth() != month) {
-			throw new IllegalArgumentException("Entry month does not match budget month.");
+			throw new IllegalArgumentException("New entry month does not match general ledger month");
 		}
 		if (newEntry.getDate().getYear() != year) {
-			throw new IllegalArgumentException("Entry year does not match " + year);
+			throw new IllegalArgumentException("New entry year does not match general ledger year.");
 		}
 		datedEntries.updateEntry(oldEntry, newEntry);
 	}
@@ -91,7 +114,12 @@ public class MonthlyLedger {
 	public Entry getSingleEntry(JDateTime date, int loc)  {
 		return datedEntries.getEntry(date, loc);
 	}
-	
+
+	// return if this single entry is in the general ledger for this month
+	public boolean isSingleEntryInMonth(SingleEntry testEntry) {
+		return datedEntries.isEntryInTheList(testEntry);
+	}
+
 	// print all income/expenses for a given month
 	public void printAllEntries() {
 		System.out.println("Ledger for " + month + "-" + year +" (displaying " + datedEntries.size() + " entries)");
@@ -102,33 +130,31 @@ public class MonthlyLedger {
 		System.out.println("");
 	};
 
-	// do the same for repeatingEntries ExpenseList
-
 	// add an account and associated amount to the list of accounts in this month's budget
 	public void addBudgetAcct(Type newAccount, double newBudgetAmount){
 		myBudget.addAccount(newAccount, newBudgetAmount);
 	}
-	
+
 	// remove an account from the list of categories in the budget (only allowed if no entries in the month for this account)
 	public void removeBudgetAcct(Type deleteAccount){
 		myBudget.deleteAccount(deleteAccount);
 	}
-	
+
 	// update the budgeted amount for a specific account
 	public void updateBudgetAmount(Type updateAccount, double newAmount) {
 		myBudget.updateBudgetAmount(updateAccount, newAmount);
 	}
-	
+
 	// check if an account is in the budget for this month
 	public boolean isAccountInBudget(Type inputAccount) {
 		return myBudget.isAccountInList(inputAccount);
 	}
-	
+
 	// get a list of singleEntries from all the days in the month
 	public ArrayList<SingleEntry> getRawSingleEntryList() {
 		return datedEntries.getRawSingleEntryList();
 	};
-	
+
 	/**
 	 * This gets the budget accounts and amounts for this month
 	 * 

@@ -4,6 +4,7 @@ package budget_program;
  * This abstract class is the template for classes that store income/expenses in the general ledger
  * @author Asa Swain
  */
+
 public abstract class Entry {
 	// type of income/expense
 	protected Type entryType;

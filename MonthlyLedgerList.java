@@ -10,6 +10,12 @@ import jodd.datetime.JDateTime;
  * @author Asa Swain
  */
 
+// 09/16/2014 MASTER TO DO LIST:
+//
+//   Hook up and test deleteSingleEntryFromLedger method
+//   Write new method RemoveMonthFromLedger(int month, int year)
+//   UpdateSingleEntryInLedger (call updateSingleEntry method)
+
 public class MonthlyLedgerList {
 
 	// hashmap of data for each month indexed by date
@@ -32,17 +38,17 @@ public class MonthlyLedgerList {
 	}
 
 	/**
-	 * The returns the number of dated entries in a specific month
+	 * The returns the number of single entries in a specific month
 	 * 
 	 * @param month  the month to count entries in
 	 * @param year  the year of the month to count entries in
-	 * @return the number of dated entries in this month/year
+	 * @return the number of single entries in this month and year
 	 */
-	public int monthlyDatedEntryCount(int month, int year) {
+	public int monthlySingleEntryCount(int month, int year) {
 		if (isMonthInLedger(month, year) == true) {
 			JDateTime monthYearId = new JDateTime(year, month, 1);
 			MonthlyLedger tempData = monthlyData.get(monthYearId);
-			return tempData.getDatedEntryCount();
+			return tempData.getSingleEntryCount();
 		} else {
 			return 0;
 		}
@@ -73,13 +79,15 @@ public class MonthlyLedgerList {
 	 */
 	public void addMonthToLedger(int month, int year, BudgetAmtList defaultBudget) {
 		if (isMonthInLedger(month, year) == true) {
-			throw new IllegalArgumentException(month + "-" + year + "already exists in the budget ledger.");
+			throw new IllegalArgumentException(month + "-" + year + "already exists in the general ledger.");
 		} else {
 			JDateTime monthYearId = new JDateTime(year, month, 1);
 			MonthlyLedger newLedger = new MonthlyLedger(month, year, defaultBudget);
 			monthlyData.put(monthYearId, newLedger);	
 		}
 	}
+	
+	//TODO: Write new method RemoveMonthFromLedger(int month, int year)
 
 	/**
 	 * This adds/updates a single entry to the ledger for a given month and year
@@ -99,6 +107,44 @@ public class MonthlyLedgerList {
 		tempData.addSingleEntry(inputEntry);
 		monthlyData.put(monthYearId, tempData);	
 	}
+	
+	/**
+	 * This deletes a single entry from the ledger for a given month and year
+	 * 
+	 * @param month  the month of the ledger to delete the entry from
+	 * @param year  the year of the month of the ledger to delete the entry from
+	 * @param delEntry  the new entry to delete from the ledger
+	 */
+	public void deleteSingleEntryFromLedger(int month, int year, SingleEntry delEntry) {
+		if (isMonthInLedger(month, year) == false) {
+			throw new IllegalArgumentException(month + "-" + year + " does not exist in the general ledger.");
+		} 
+		JDateTime monthYearId = new JDateTime(year, month, 1);
+		MonthlyLedger tempData = monthlyData.get(monthYearId);
+		if (tempData.isSingleEntryInMonth(delEntry) == false) {
+			throw new IllegalArgumentException("This single entry does not exist in the the general ledger for this month.");
+		}
+		tempData.deleteSingleEntry(delEntry);
+		monthlyData.put(monthYearId, tempData);	
+	}
+	
+	//TODO: UpdateSingleEntryInLedger (call updateSingleEntry method)
+	
+	/**
+	 * This checks to see if a single entry is in the ledger for a given month and year
+	 * 
+	 * @param month  the month of the ledger to search in
+	 * @param year  the year of the month of the ledger to search in
+	 * @param testEntry  the entry to search for in the ledger
+	 */
+	public boolean isSingleEntryInLedger(int month, int year, SingleEntry testEntry) {
+		if (isMonthInLedger(month, year) == false) {
+			throw new IllegalArgumentException(month + "-" + year + " does not exist in the general ledger.");
+		} 
+		JDateTime monthYearId = new JDateTime(year, month, 1);
+		MonthlyLedger tempData = monthlyData.get(monthYearId);
+		return tempData.isSingleEntryInMonth(testEntry);
+	}
 
 	/**
 	 * This prints out all the entries for all months in the list
@@ -108,7 +154,7 @@ public class MonthlyLedgerList {
 	 */
 	public void printMonthlyLedger(int month, int year) {
 		if (isMonthInLedger(month, year) == false) {
-			throw new IllegalArgumentException(month + "-" + year + "doesn't exist in the budget ledger.");
+			throw new IllegalArgumentException(month + "-" + year + "doesn't exist in the general ledger.");
 		} else {
 			try {
 				JDateTime monthYearId = new JDateTime(year, month, 1);
@@ -257,30 +303,5 @@ public class MonthlyLedgerList {
 		}
 	}
 	 *
-	 */
-
-	/*
-	 * // eventually I'll need to insert this into a list instead of just adding to the end
-	public void addEntry(Entry newEntry) {
-		entryList.add(newEntry);
-	}
-
-	public void deleteEntry(Entry delEntry) {
-		entryList.remove(delEntry);
-	}
-
-	public void updateEntry(Entry oldEntry, Entry newEntry) {
-		int loc = entryList.indexOf(oldEntry);
-		entryList.set(loc, newEntry);
-	}
-
-	public Entry getEntry(int loc) {
-		return entryList.get(loc);
-	}
-
-	public int size() {
-		return entryList.size();
-	}
-
 	 */
 }

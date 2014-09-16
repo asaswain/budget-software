@@ -9,6 +9,7 @@ import jodd.datetime.JDateTime;
 * and each day contains an ArrayList of single entries
 * @author Asa Swain
 */
+
 public class DatedList {	
 	// use date as key in HashMap to return an arraylist of entries for that date
 	private HashMap<JDateTime, DaysEntries> listDatedEntries;
@@ -53,12 +54,12 @@ public class DatedList {
 	 * @throws IllegalArgumentException if delEntry does not exist on this day
 	 */
 	public void deleteEntry(SingleEntry delEntry) {
-		DaysEntries tempDaysEntries = listDatedEntries.get(delEntry.getDate());
-		if (tempDaysEntries.isInDaysEntries(delEntry) == false) {
+		if (isEntryInTheList(delEntry) == false) {
 			throw new IllegalArgumentException("Cannot delete. The entry does not exist in the entries for this date " + delEntry.getDate());
 		}
+		DaysEntries tempDaysEntries = listDatedEntries.get(delEntry.getDate());
 		tempDaysEntries.deleteEntry(delEntry);
-		listDatedEntries.put(delEntry.getDate(), tempDaysEntries);
+		listDatedEntries.put(delEntry.getDate(),tempDaysEntries);
 	}
 	
 	/**
@@ -77,6 +78,17 @@ public class DatedList {
 		}
 		// add new entry
 		addEntry(newEntry);
+	}
+	
+	/**
+	 * This checks if a single entry is in the list of entries for this month
+	 * 
+	 * @param testEntry - the entry we are searching for
+	 * @return true if this entry is in the month then return true, else return false
+	 */
+	public boolean isEntryInTheList(SingleEntry testEntry) {
+		DaysEntries tempDaysEntries = listDatedEntries.get(testEntry.getDate());	
+		return tempDaysEntries.isInDaysEntries(testEntry);
 	}
 	
 	/**

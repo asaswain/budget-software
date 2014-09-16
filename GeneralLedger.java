@@ -10,6 +10,16 @@ import jodd.datetime.*;
  * @author Asa Swain
  */
 
+// 09/16/2014 MASTER TO DO LIST:
+//
+//   1. finish working on Delete Single Entry Method
+//   2. write a Update Single Entry Method
+//   3. write a Add Repeating Entry Method
+//   add a "getListOfMonths" method
+//   finish writing getTotalAmountDonatedToCharity method
+//   In SQLDatabaseConnection check for failed connection and throw error if unable to make connection
+//   
+
 //05/09/2014 TODO: add a "getListOfMonths" method?
 
 public class GeneralLedger {
@@ -124,6 +134,17 @@ public class GeneralLedger {
 		// create new SingleEntry
 		SingleEntry inputEntry = new SingleEntry(inputDate, inputType, inputDesc, inputAmt);
 		monthlyData.addSingleEntryToLedger(inputDate.getMonth(), inputDate.getYear(), inputEntry);
+	}
+	
+	/**
+	 * This deletes a single entry from the month
+	 * 
+	 * @param month - month to delete entry from
+	 * @param delEntry - year to delete entry from
+	 * @param delEntry - the entry to delete
+	 */
+	public void deleteSingleEntry(int month, int year, SingleEntry delEntry) {
+		
 	}
 
 	/** 
@@ -282,7 +303,7 @@ public class GeneralLedger {
 		// variable to keep track of it SQL Tables exist
 		private boolean SQLTablesExist[];
 
-		final int nbrSQLDatabases = 4;
+		final int NBR_SQL_DATABASES = 4;
 		
 		/**
 		 * This is a blank constructor
@@ -293,8 +314,8 @@ public class GeneralLedger {
 			//TODO check for failed connection and throw error if unable to make connection
 			//if (connection == null) return;
 					
-			SQLTablesExist = new boolean[nbrSQLDatabases];
-			for (int i = 0; i < nbrSQLDatabases; i++) {
+			SQLTablesExist = new boolean[NBR_SQL_DATABASES];
+			for (int i = 0; i < NBR_SQL_DATABASES; i++) {
 				SQLTablesExist[i] = true;
 			}
 		}
@@ -304,9 +325,8 @@ public class GeneralLedger {
 		 */
 		public void createSQLtable() {
 			executeSQLCommand("VerifySQLTables");
-			for (int i = 0; i < nbrSQLDatabases; i++) {
+			for (int i = 0; i < NBR_SQL_DATABASES; i++) {
 				if (SQLTablesExist[i] == false) {
-					//TODO: Create SQL tables on the fly
 					executeSQLCommand("CreateSQLTable" + i);
 					SQLTablesExist[i] = true;
 				}

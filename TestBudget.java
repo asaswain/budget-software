@@ -31,6 +31,12 @@ public class TestBudget {
 			System.out.println("AM - add new month to the database");
 			System.out.println("AC - add an account to the database");
 			System.out.println("AE - add an entry to a specific month");
+			//System.out.println("D - delete an entry from a specific month");
+			// this entails:
+			//   getting month and year 
+			//   print list of entries in month for user to pick from
+			//   getting a specific entry (or else passing an index for a specific entry)
+			//   calling 
 			System.out.println("");
 			System.out.println("Configure Budget:");
 			System.out.println("CD - configure default budget account/amount data");
@@ -45,7 +51,7 @@ public class TestBudget {
 			System.out.println("");
 
 			String menuChoice = stdInputScanner.nextLine();
-			
+
 			// add a new month to the database
 			if (menuChoice.toUpperCase().equals("AM")) {
 				System.out.println("Enter the month number to create new budget for:");					
@@ -113,26 +119,13 @@ public class TestBudget {
 				System.out.println("Enter type of entry 'S'ingle, 'R'epeating or 'I'nstallment:");
 				char entryType = stdInputScanner.nextLine().charAt(0);
 
+				// single entries
 				if (entryType == 'S' || entryType == 's') {
 					// enter date for entry
 					System.out.println("Enter Entry Date:");
 					String inputDate = stdInputScanner.nextLine();
 
-					// replace periods with slashes
-					if (inputDate.contains(".") == true) {
-						inputDate = inputDate.replace(".","/");
-					}
-					System.out.println("Date:" + inputDate);
-					String parts[] = inputDate.split("/");
-					// convert year from 2 digits to 4 digits
-					if (parts[2].length() == 2) { 
-						parts[2] = "20" + parts[2]; 
-					}
-					int month = Integer.parseInt(parts[0]);
-					int day = Integer.parseInt(parts[1]);
-					int year = Integer.parseInt(parts[2]);
-
-					JDateTime entryDate = new JDateTime(year, month, day);
+					JDateTime entryDate = formatDate(inputDate);
 
 					//System.out.println("You typed: " + entryDate.getMonth() + '-' + entryDate.getDay() + '-' + entryDate.getYear());
 
@@ -140,10 +133,9 @@ public class TestBudget {
 					System.out.println("Enter Entry Desc:");
 					String inputDesc = stdInputScanner.nextLine();
 
-					// select category
-
+					// select account
 					if (test.getAccountList().size() == 0) {
-						System.out.println("Database has no categories to choose from. Aborting input.");
+						System.out.println("Database has no accounts to choose from. Aborting input.");
 						return;
 					} 
 
@@ -170,8 +162,110 @@ public class TestBudget {
 					double inputAmt = Double.parseDouble(stdInputScanner.nextLine());
 
 					test.addSingleEntry(entryDate, inputDesc, inputType, inputAmt);
-				} else {
-					System.out.println("Repeating and Installment entries aren't functional yet");
+				}
+
+				//repeating entries
+				if (entryType == 'R' || entryType == 'r') {
+					System.out.println("Repeating entries aren't functional yet");
+					/*String tmpDate;
+
+					// enter start date for entry
+					System.out.println("Enter Start Date of Repeating Entries:");
+					tmpDate = stdInputScanner.nextLine();
+
+					JDateTime startDate = formatDate(tmpDate);
+
+					// enter end date for entry
+					System.out.println("Enter End Date of Repeating Entries:");
+					tmpDate = stdInputScanner.nextLine();
+
+					JDateTime endDate = formatDate(tmpDate);
+
+					// enter description
+					System.out.println("Enter Entry Desc:");
+					String inputDesc = stdInputScanner.nextLine();
+
+					// select account
+					if (test.getAccountList().size() == 0) {
+						System.out.println("Database has no accounts to choose from. Aborting input.");
+						return;
+					} 
+
+					int inputNum = 0;
+					int badCategory = 0;
+					do {
+						String categoryMsg = "Select account ";
+						for (int i = 0; i < test.getAccountList().size(); i++) {
+							categoryMsg = categoryMsg + i + "-" + test.getAccountList().get(i).getTypeName() + " ";
+						}
+						System.out.println(categoryMsg);
+						inputNum = Integer.parseInt(stdInputScanner.nextLine());
+
+						if (inputNum > test.getAccountList().size()) {
+							System.out.println("Invalid account number");	
+							badCategory = 1;
+						}
+					} while (badCategory == 1);
+
+					Type inputType = test.getAccountList().get(inputNum);
+
+					// enter amount
+					System.out.println("Enter Amount For Each Month:");
+					double inputAmt = Double.parseDouble(stdInputScanner.nextLine());
+
+					test.addRepeatingEntry(startDate, endDate, inputDesc, inputType, inputAmt);*/
+				}
+
+				//installment entries
+				if (entryType == 'I' || entryType == 'i') {
+					System.out.println("Installment entries aren't functional yet");
+					/*String tmpDate;
+
+					// enter start date for entry
+					System.out.println("Enter Start Date of Installment Entries:");
+					tmpDate = stdInputScanner.nextLine();
+
+					JDateTime startDate = formatDate(tmpDate);
+
+					// enter end date for entry
+					System.out.println("Enter End Date of Installment Entries:");
+					tmpDate = stdInputScanner.nextLine();
+
+					JDateTime endDate = formatDate(tmpDate);
+
+					// enter description
+					System.out.println("Enter Entry Desc:");
+					String inputDesc = stdInputScanner.nextLine();
+
+					// select account
+					if (test.getAccountList().size() == 0) {
+						System.out.println("Database has no accounts to choose from. Aborting input.");
+						return;
+					} 
+
+					int inputNum = 0;
+					int badCategory = 0;
+					do {
+						String categoryMsg = "Select account ";
+						for (int i = 0; i < test.getAccountList().size(); i++) {
+							categoryMsg = categoryMsg + i + "-" + test.getAccountList().get(i).getTypeName() + " ";
+						}
+						System.out.println(categoryMsg);
+						inputNum = Integer.parseInt(stdInputScanner.nextLine());
+
+						if (inputNum > test.getAccountList().size()) {
+							System.out.println("Invalid account number");	
+							badCategory = 1;
+						}
+					} while (badCategory == 1);
+
+					Type inputType = test.getAccountList().get(inputNum);
+
+					// enter amount
+					System.out.println("Enter Total Amount:");
+					double inputAmt = Double.parseDouble(stdInputScanner.nextLine());
+
+					test.addInstallmentEntry(startDate, endDate, inputDesc, inputType, inputAmt);*/
 				}
 			}
 
@@ -275,17 +369,10 @@ public class TestBudget {
 				System.out.println("Enter a date for which month to update:");
 				String inputDate = stdInputScanner.nextLine();
 
-				// replace periods with slashes
-				if (inputDate.contains(".") == true) {
-					inputDate = inputDate.replace(".","/");
-				}
-				String parts[] = inputDate.split("/");
-				// convert year from 2 digits to 4 digits
-				if (parts[2].length() == 2) { 
-					parts[2] = "20" + parts[2]; 
-				}
-				int month = Integer.parseInt(parts[0]);
-				int year = Integer.parseInt(parts[2]);
+				JDateTime tempDate = formatDate(inputDate);
+
+				int month = tempDate.getMonth();
+				int year = tempDate.getYear();
 
 				System.out.println(month + "-" + year + " monthly budget account/amount option:");
 				System.out.println("A - Add new account and amount to monthly budget");
@@ -398,7 +485,7 @@ public class TestBudget {
 					System.out.println(e);	
 				} 
 			}
-			
+
 			// print the contents of the entire general ledger
 			if (menuChoice.toUpperCase().equals("PD")) {
 				try {
@@ -423,4 +510,21 @@ public class TestBudget {
 		} while (abort == 0);
 	}
 
+	private static JDateTime formatDate(String inputDate) {
+		// replace periods with slashes
+		if (inputDate.contains(".") == true) {
+			inputDate = inputDate.replace(".","/");
+		}
+		//System.out.println("Date:" + inputDate);
+		String parts[] = inputDate.split("/");
+		// convert year from 2 digits to 4 digits
+		if (parts[2].length() == 2) { 
+			parts[2] = "20" + parts[2]; 
+		}
+		int month = Integer.parseInt(parts[0]);
+		int day = Integer.parseInt(parts[1]);
+		int year = Integer.parseInt(parts[2]);
+
+		return new JDateTime(year, month, day);
+	}
 }
