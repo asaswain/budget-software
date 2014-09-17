@@ -2,6 +2,7 @@ package budget_program;
 
 import java.util.*;
 import java.sql.*;
+
 import jodd.datetime.*;
 
 /**
@@ -12,7 +13,7 @@ import jodd.datetime.*;
 
 // 09/16/2014 MASTER TO DO LIST:
 //
-//   1. finish working on Delete Single Entry Method
+//   1. finish working on deleteSingleEntry Method
 //   2. write a Update Single Entry Method
 //   3. write a Add Repeating Entry Method
 //   add a "getListOfMonths" method
@@ -137,14 +138,18 @@ public class GeneralLedger {
 	}
 	
 	/**
-	 * This deletes a single entry from the month
+	 * This deletes a single entry from a month
 	 * 
-	 * @param month - month to delete entry from
-	 * @param delEntry - year to delete entry from
-	 * @param delEntry - the entry to delete
+	 * @param entryDate - the date of the entry to delete
+	 * @param entryIndex - the index of the entry to delete on that date
+	 * @exception - if there is an error from the deleteSingleEntryFromLedger method
 	 */
-	public void deleteSingleEntry(int month, int year, SingleEntry delEntry) {
-		
+	public void deleteSingleEntry(JDateTime targetDate, int targetIndex) {
+		try {
+			monthlyData.deleteSingleEntryFromLedger(targetDate, targetIndex);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(e);
+		}
 	}
 
 	/** 
@@ -286,9 +291,9 @@ public class GeneralLedger {
 	}
 
 	// TODO: finish writing getTotalAmountDonatedToCharity method
-	public double getTotalAmountDonatedToCharity(JDateTime startDate, JDateTime endDate) {
-		return 0;
-	}
+	//public double getTotalAmountDonatedToCharity(JDateTime startDate, JDateTime endDate) {
+	//	...
+	//}
 
 	/**
 	 * This class handles the connection with the SQL database (creating SQL tables, loading data, saving data)

@@ -111,20 +111,25 @@ public class MonthlyLedgerList {
 	/**
 	 * This deletes a single entry from the ledger for a given month and year
 	 * 
-	 * @param month  the month of the ledger to delete the entry from
-	 * @param year  the year of the month of the ledger to delete the entry from
-	 * @param delEntry  the new entry to delete from the ledger
+	 * @param targetDate - the date of the entry to delete
+	 * @param targetIndex - the index of the entry to delete on that date
+	 * @exception - if a ledger for month and year do no exist
+	 * @exception - if there is an error from the deleteSingleEntry method
 	 */
-	public void deleteSingleEntryFromLedger(int month, int year, SingleEntry delEntry) {
+	public void deleteSingleEntryFromLedger(JDateTime targetDate, int targetIndex) {
+		int month = targetDate.getMonth();
+		int year = targetDate.getYear();
 		if (isMonthInLedger(month, year) == false) {
 			throw new IllegalArgumentException(month + "-" + year + " does not exist in the general ledger.");
 		} 
 		JDateTime monthYearId = new JDateTime(year, month, 1);
 		MonthlyLedger tempData = monthlyData.get(monthYearId);
-		if (tempData.isSingleEntryInMonth(delEntry) == false) {
-			throw new IllegalArgumentException("This single entry does not exist in the the general ledger for this month.");
+		
+		try {
+			tempData.deleteSingleEntry(targetDate, targetIndex);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(e);
 		}
-		tempData.deleteSingleEntry(delEntry);
 		monthlyData.put(monthYearId, tempData);	
 	}
 	

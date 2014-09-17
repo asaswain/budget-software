@@ -66,7 +66,7 @@ public class MonthlyLedger {
 	}
 
 	/**
-	 * This method returns the number of Single Entries in all the days in this month
+	 * This method returns the number of single entries in all the days in this month
 	 * 
 	 * @return an integer of the number of single entries in this month
 	 */
@@ -74,7 +74,13 @@ public class MonthlyLedger {
 		return datedEntries.size();
 	}
 
-	// add a single entry to the dated expense list
+	/**
+	 * This method adds a single entry to the single entry list for this month
+	 * 
+	 * @param newEntry - the new entry to add
+	 * @exception - entry month does not match general ledger month
+	 * @exception - entry year does not match general ledger year
+	 */
 	public void addSingleEntry(SingleEntry newEntry) {
 		// make sure entry date is valid before adding entry
 		if (newEntry.getDate().getMonth() != month) {
@@ -86,12 +92,32 @@ public class MonthlyLedger {
 		datedEntries.addEntry(newEntry);		
 	}
 
-	// delete a single entry from the dated expense list
-	public void deleteSingleEntry(SingleEntry delEntry) {
-		datedEntries.deleteEntry(delEntry);
+	/**
+	 * This deletes a single entry from the dated expense list
+	 * 
+	 * @param targetDate - the date of the entry to delete
+	 * @param targetIndex - the index of the entry to delete on that date
+	 * @exception - if there is an error from the deleteEntry method
+	 */
+	public void deleteSingleEntry(JDateTime targetDate, int targetIndex) {
+		try {
+			datedEntries.deleteEntry(targetDate, targetIndex);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(e);
+		}
 	}
 
-	// update a single entry on the dated expense list
+	/**
+	 * This updates a single entry on the dated expense list
+	 * 
+	 * @param newEntry - the new entry to add
+	 * @param oldEntry - the old entry to remove
+	 * @exception - old entry month does not match general ledger month
+	 * @exception - old entry year does not match general ledger year
+	 * @exception - new entry month does not match general ledger month
+	 * @exception - new entry year does not match general ledger year
+	 * 
+	 */
 	public void updateSingleEntry(SingleEntry newEntry, SingleEntry oldEntry)  {
 		// make sure old entry date is valid before updating entry
 		if (oldEntry.getDate().getMonth() != month) {
@@ -110,17 +136,29 @@ public class MonthlyLedger {
 		datedEntries.updateEntry(oldEntry, newEntry);
 	}
 
-	// get data for a single entry on the dated expense list
-	public Entry getSingleEntry(JDateTime date, int loc)  {
-		return datedEntries.getEntry(date, loc);
+	/**
+	 * 	This gets a single entry object from the dated expense list
+	 * 
+	 * @param entryDate - the date of the entry I am looking for
+	 * @param index - the index in that date of the entry I am looking for
+	 * @return a SingleEntry object
+	 */
+	public SingleEntry getSingleEntry(JDateTime entryDate, int index)  {
+		return datedEntries.getEntry(entryDate, index);
 	}
 
-	// return if this single entry is in the general ledger for this month
+	/**
+	 * This returns true if this single entry is in the general ledger for this month else returns false
+	 * @param testEntry - the single entry I am looking for
+	 * @return a true/false value for if the single entry is in the general ledger for this month
+	 */
 	public boolean isSingleEntryInMonth(SingleEntry testEntry) {
 		return datedEntries.isEntryInTheList(testEntry);
 	}
 
-	// print all income/expenses for a given month
+	/**
+	 * This prints a list of all income/expenses for a given month to the screen and prints the budget for the month
+	 */
 	public void printAllEntries() {
 		System.out.println("Ledger for " + month + "-" + year +" (displaying " + datedEntries.size() + " entries)");
 		datedEntries.printAllItems();
@@ -130,27 +168,49 @@ public class MonthlyLedger {
 		System.out.println("");
 	};
 
-	// add an account and associated amount to the list of accounts in this month's budget
+	/**
+	 * This adds an account and associated amount to the list of accounts in this month's budget
+	 * @param newAccount - account to add to budget
+	 * @param newBudgetAmount - amount to budget for that account
+	 */
 	public void addBudgetAcct(Type newAccount, double newBudgetAmount){
 		myBudget.addAccount(newAccount, newBudgetAmount);
 	}
 
-	// remove an account from the list of categories in the budget (only allowed if no entries in the month for this account)
+	/**
+	 * This removes an account from the list of categories in the budget 
+	 * (TODO: this should only be allowed if no entries in the month for this account)
+	 * @param deleteAccount - account to delete from budget
+	 */
 	public void removeBudgetAcct(Type deleteAccount){
 		myBudget.deleteAccount(deleteAccount);
 	}
 
-	// update the budgeted amount for a specific account
+	/**
+	 * This updates the budgeted amount for a specific account
+	 * 
+	 * @param updateAccount - account to update budgeted amount for
+	 * @param newAmount - new budgeted amount
+	 */
 	public void updateBudgetAmount(Type updateAccount, double newAmount) {
 		myBudget.updateBudgetAmount(updateAccount, newAmount);
 	}
 
-	// check if an account is in the budget for this month
+	/**
+	 * This checks if an account is in the budget for this month
+	 * 
+	 * @param inputAccount - the account we are looking for
+	 * @return true if account is in the budget, else false
+	 */
 	public boolean isAccountInBudget(Type inputAccount) {
 		return myBudget.isAccountInList(inputAccount);
 	}
 
-	// get a list of singleEntries from all the days in the month
+	/**
+	 * This returns a raw ArrayList of single entry objects for all the entries in this month
+	 * 
+	 * @return an ArrayList of single entry objects
+	 */
 	public ArrayList<SingleEntry> getRawSingleEntryList() {
 		return datedEntries.getRawSingleEntryList();
 	};
@@ -164,7 +224,6 @@ public class MonthlyLedger {
 		return myBudget;
 	};
 
-	//(make sure expense date is within the month)
 
 	//public getMoneyLeftInCategory(category)
 	//public getTotalBudget

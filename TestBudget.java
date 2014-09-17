@@ -14,7 +14,6 @@ public class TestBudget {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 		GeneralLedger test = new GeneralLedger();
 
 		// load SQL database data into Java data structures
@@ -34,9 +33,11 @@ public class TestBudget {
 			//System.out.println("D - delete an entry from a specific month");
 			// this entails:
 			//   getting month and year 
-			//   print list of entries in month for user to pick from
-			//   getting a specific entry (or else passing an index for a specific entry)
-			//   calling 
+			//   do you want me to print all the entries for this month?
+			//   get date
+			//   print list of entries for this date
+			//   get entry index integer  
+			//   call deleteSingleEntry(targetDate, targetIndex)
 			System.out.println("");
 			System.out.println("Configure Budget:");
 			System.out.println("CD - configure default budget account/amount data");

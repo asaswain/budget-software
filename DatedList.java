@@ -50,16 +50,18 @@ public class DatedList {
 	/**
 	 * This removes an entry from the list of entries for this month (making sure it's there first)
 	 *
-	 * @param delEntry  the SingleEntry to delete
-	 * @throws IllegalArgumentException if delEntry does not exist on this day
+	 * @param targetDate - date of entry to delete
+	 * @param targetIndex - index of entry to delete
+	 * @exception IllegalArgumentException - if exception occurs in deleteEntry command
 	 */
-	public void deleteEntry(SingleEntry delEntry) {
-		if (isEntryInTheList(delEntry) == false) {
-			throw new IllegalArgumentException("Cannot delete. The entry does not exist in the entries for this date " + delEntry.getDate());
+	public void deleteEntry(JDateTime targetDate, int targetIndex) {
+		DaysEntries tempDaysEntries = listDatedEntries.get(targetDate);
+		try {
+			tempDaysEntries.deleteEntry(targetIndex);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(e);
 		}
-		DaysEntries tempDaysEntries = listDatedEntries.get(delEntry.getDate());
-		tempDaysEntries.deleteEntry(delEntry);
-		listDatedEntries.put(delEntry.getDate(),tempDaysEntries);
+		listDatedEntries.put(targetDate,tempDaysEntries);
 	}
 	
 	/**
@@ -67,14 +69,14 @@ public class DatedList {
 	 *
 	 * @param oldEntry  the old SingleEntry to remove
 	 * @param newEntry  the new SingleEntry to add
-	 * @throws IllegalArgumentException if the oldEntry does not exist on this day
+	 * @exception IllegalArgumentException - if the oldEntry does not exist on this day
 	 */
 	public void updateEntry(SingleEntry oldEntry, SingleEntry newEntry) {
 		// delete old entry
 		try {
-			deleteEntry(oldEntry);
+			updateEntry(oldEntry, newEntry);
 		} catch (IllegalArgumentException e){
-			throw new IllegalArgumentException("Cannot update. The old entry does not exist in the entries for this date " + oldEntry.getDate());
+			throw new IllegalArgumentException(e);
 		}
 		// add new entry
 		addEntry(newEntry);
@@ -115,6 +117,16 @@ public class DatedList {
 			totalSize = totalSize + listDatedEntries.get(tmpDate).size();
 		}
 		return totalSize;
+	}
+
+	/**
+	 * This returns the number of SingleEntries in a specific date
+	 * 
+	 * @param the date we are looking for 
+	 * @return the number of entries in that date
+	 */
+	public int numberOfEntriesInDate(JDateTime searchDate) {
+		return listDatedEntries.get(searchDate).size();
 	}
 	
 	/**
