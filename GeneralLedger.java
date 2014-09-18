@@ -110,7 +110,7 @@ public class GeneralLedger {
 	}
 
 	/**
-	 * // Adds a new month to the ledger (an error is thrown if the month already exists in the ledger)
+	 * Adds a new month to the ledger (an error is thrown if the month already exists in the ledger)
 	 * 
 	 * @param month - month to add to ledger
 	 * @param year - year of month to add to ledger
@@ -121,6 +121,17 @@ public class GeneralLedger {
 		} catch (IllegalArgumentException e) {
 			throw new IllegalArgumentException(e);
 		}
+	}
+	
+	/**
+	 * This returns true if a ledger for this month and year has been created, else returns false
+	 * 
+	 * @param month - month we are searching for in ledger
+	 * @param year - year we are searching for in ledger
+	 * @return - true if a ledger for this month and year has been created, else returns false
+	 */
+	public boolean isMonthInLedger(int month, int year) {
+		return monthlyData.isMonthInLedger(month, year);
 	}
 
 	/**
@@ -134,7 +145,11 @@ public class GeneralLedger {
 	public void addSingleEntry(JDateTime inputDate, String inputDesc, Type inputType, double inputAmt) {
 		// create new SingleEntry
 		SingleEntry inputEntry = new SingleEntry(inputDate, inputType, inputDesc, inputAmt);
+		try {
 		monthlyData.addSingleEntryToLedger(inputDate.getMonth(), inputDate.getYear(), inputEntry);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(e);
+		}
 	}
 	
 	/**
@@ -151,6 +166,27 @@ public class GeneralLedger {
 			throw new IllegalArgumentException(e);
 		}
 	}
+	
+	/**
+	 * Get the number of single entries in a given month of the general ledger
+	 * 
+	 * @param month - month of the ledger to search
+	 * @param year - year of the ledger to search
+	 * @return - number of single entries found in the month
+	 */
+	public int getMonthlyLedgerSingleEntryCount(int month, int year) {
+		return monthlyData.getMonthlySingleEntryCount(month, year);
+	}
+	
+	/**
+	 * Get the number of single entries in a given date of the general ledger
+	 * 
+	 * @param searchDate - date in the ledger to search
+	 * @return - number of single entries found in the date
+	 */
+	public int getDailyLedgerSingleEntryCount(JDateTime searchDate) {
+		return monthlyData.getDailySingleEntryCount(searchDate);
+	}
 
 	/** 
 	 * This returns a list of all the accounts in the general ledger
@@ -162,14 +198,28 @@ public class GeneralLedger {
 	}
 
 	/**
-	 * Print all entries for a given month
+	 * This prints all single entries for a given date
+	 * 
+	 * @param printDate - the date to print single entries for
+	 */
+	public void printDaysEntries(JDateTime printDate) {
+		try {
+			monthlyData.printDailyLedger(printDate);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(e);
+		} 
+	}
+	
+	/**
+	 * This prints all entries for a given month
 	 * 
 	 * @param month - month to print entries for
 	 * @param year - year to print entries for
+	 * @param printBudget - if true then also print budget info for this month
 	 */
-	public void printMonth(int month, int year) {
+	public void printMonth(int month, int year, boolean printBudget) {
 		try {
-			monthlyData.printMonthlyLedger(month, year);
+			monthlyData.printMonthlyLedger(month, year, printBudget);
 		} catch (IllegalArgumentException e) {
 			throw new IllegalArgumentException(e);
 		} 
@@ -177,10 +227,12 @@ public class GeneralLedger {
 
 	/**
 	 * Print all entries for all months in the ledger
+	 * 
+	 * @param printBudget - if true then also print budget info for this month
 	 */
-	public void printAll() {
+	public void printAll(boolean printBudget) {
 		try {
-			monthlyData.printEntireLedger();
+			monthlyData.printEntireLedger(printBudget);
 		} catch (IllegalArgumentException e) {
 			throw new IllegalArgumentException(e);
 		} 
@@ -281,8 +333,9 @@ public class GeneralLedger {
 	 * @return account object or null if not found
 	 */
 	private Type getAccount(String accountName) {
-		for (int i = 1; i < accountList.size(); i++) {
+		for (int i = 0; i < accountList.size(); i++) {
 			Type tempAccount = accountList.get(i);
+			System.out.println(tempAccount.getTypeName());
 			if (tempAccount.getTypeName().equals(accountName)) {
 				return tempAccount;	
 			}

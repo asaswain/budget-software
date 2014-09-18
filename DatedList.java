@@ -43,7 +43,11 @@ public class DatedList {
 		} else {
 			tempDaysEntries = new DaysEntries(newEntry.getDate());
 		}
+		try {
 		tempDaysEntries.addEntry(newEntry);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(e);
+		}
 		listDatedEntries.put(newEntry.getDate(), tempDaysEntries);
 	}
 	
@@ -125,26 +129,26 @@ public class DatedList {
 	 * @param the date we are looking for 
 	 * @return the number of entries in that date
 	 */
-	public int numberOfEntriesInDate(JDateTime searchDate) {
+	public int getNumberOfEntriesInDate(JDateTime searchDate) {
 		return listDatedEntries.get(searchDate).size();
 	}
 	
 	/**
-	 * This prints all the entries in the entire month
+	 * This prints all the single entries in the entire month
 	 */
-	public void printAllItems() {
+	public void printAllEntries() {
 		//keySet returns a set of all the keys in the HashMap
 		for(JDateTime tmpDate : listDatedEntries.keySet()){
-			printDay(tmpDate);
+			printDaysEntries(tmpDate);
 		}
 	}
 	
 	/**
-	 * This prints all the entries on a specific date
+	 * This prints all the single entries on a specific date
 	 * 
 	 * @param date  the date to print all the entries for
 	 */
-	public void printDay(JDateTime date) {
+	public void printDaysEntries(JDateTime date) {
 		DaysEntries targetDaysEntries = listDatedEntries.get(date);
 		
 		int listSize = targetDaysEntries.size();
@@ -180,7 +184,7 @@ public class DatedList {
 	};
 	
 	/** 
-	 * This private class stores an ArrayList of entries for a single date
+	 * This private class stores an ArrayList of single entries for one date
 	 */
 	private class DaysEntries implements Comparable<DaysEntries> {
 		// a list of income/expense entries
@@ -214,9 +218,11 @@ public class DatedList {
 		 * doesn't match the date of this DaysEntries object
 		 */
 		public void addEntry(SingleEntry newEntry) {
-			if (newEntry.getDate() == date) {
-			datedEntryList.add(newEntry);
+			if (newEntry.getDate().equals(date)) {
+				datedEntryList.add(newEntry);
 			} else {
+				System.out.println("database date = " + date);
+				System.out.println("entry date = " + newEntry.getDate());
 				throw new IllegalArgumentException("Date doesn't match date for this day of entries: " + date);
 			}
 		}
@@ -229,7 +235,7 @@ public class DatedList {
 		 */
 		public void deleteEntry(SingleEntry delEntry) {
 			if (datedEntryList.contains(delEntry)) {
-			datedEntryList.remove(delEntry);
+			   datedEntryList.remove(delEntry);
 			} else {
 				throw new IllegalArgumentException("The list of entries for this date: " + date + " doesn't have the entry you are trying to delete");
 			}

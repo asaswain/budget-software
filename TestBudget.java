@@ -1,6 +1,7 @@
 package budget_program;
 
 import java.util.*;
+
 import jodd.datetime.JDateTime;
 
 /**
@@ -30,14 +31,7 @@ public class TestBudget {
 			System.out.println("AM - add new month to the database");
 			System.out.println("AC - add an account to the database");
 			System.out.println("AE - add an entry to a specific month");
-			//System.out.println("D - delete an entry from a specific month");
-			// this entails:
-			//   getting month and year 
-			//   do you want me to print all the entries for this month?
-			//   get date
-			//   print list of entries for this date
-			//   get entry index integer  
-			//   call deleteSingleEntry(targetDate, targetIndex)
+			System.out.println("DE - delete an entry from a specific month"); 
 			System.out.println("");
 			System.out.println("Configure Budget:");
 			System.out.println("CD - configure default budget account/amount data");
@@ -118,10 +112,10 @@ public class TestBudget {
 			// add an entry to a month
 			if (menuChoice.toUpperCase().equals("AE") ) {
 				System.out.println("Enter type of entry 'S'ingle, 'R'epeating or 'I'nstallment:");
-				char entryType = stdInputScanner.nextLine().charAt(0);
+				String entryType = stdInputScanner.nextLine();
 
 				// single entries
-				if (entryType == 'S' || entryType == 's') {
+				if (entryType.toUpperCase().equals("S")) {
 					// enter date for entry
 					System.out.println("Enter Entry Date:");
 					String inputDate = stdInputScanner.nextLine();
@@ -141,7 +135,7 @@ public class TestBudget {
 					} 
 
 					int inputNum = 0;
-					int badCategory = 0;
+					int badCategory;
 					do {
 						String categoryMsg = "Select account ";
 						for (int i = 0; i < test.getAccountList().size(); i++) {
@@ -153,6 +147,8 @@ public class TestBudget {
 						if (inputNum > test.getAccountList().size()) {
 							System.out.println("Invalid account number");	
 							badCategory = 1;
+						} else {
+							badCategory = 0;
 						}
 					} while (badCategory == 1);
 
@@ -162,11 +158,15 @@ public class TestBudget {
 					System.out.println("Enter Entry Amount:");
 					double inputAmt = Double.parseDouble(stdInputScanner.nextLine());
 
-					test.addSingleEntry(entryDate, inputDesc, inputType, inputAmt);
+					try {
+						test.addSingleEntry(entryDate, inputDesc, inputType, inputAmt);
+					} catch (IllegalArgumentException e) {
+						System.out.println("Error: " + e);
+					}
 				}
 
 				//repeating entries
-				if (entryType == 'R' || entryType == 'r') {
+				if (entryType.toUpperCase().equals("R")) {
 					System.out.println("Repeating entries aren't functional yet");
 					/*String tmpDate;
 
@@ -218,7 +218,7 @@ public class TestBudget {
 				}
 
 				//installment entries
-				if (entryType == 'I' || entryType == 'i') {
+				if (entryType.toUpperCase().equals("I")) {
 					System.out.println("Installment entries aren't functional yet");
 					/*String tmpDate;
 
@@ -267,6 +267,65 @@ public class TestBudget {
 					double inputAmt = Double.parseDouble(stdInputScanner.nextLine());
 
 					test.addInstallmentEntry(startDate, endDate, inputDesc, inputType, inputAmt);*/
+				}
+			}
+
+			// delete an entry from a specific month
+			if (menuChoice.toUpperCase().equals("DE")) {
+
+				// enter date for entry
+				System.out.println("Enter Date of Month To Remove Entry From (MM/DD/YYYY):");
+				String inputDate = stdInputScanner.nextLine();
+
+				JDateTime monthDate = formatDate(inputDate);
+
+				int month = monthDate.getMonth();
+				int year = monthDate.getYear();
+
+				if (test.isMonthInLedger(month, year) == true) {
+
+					System.out.println("Do you want me to print all the entries for this month? (Y/N)");
+					String printMonthEntries = stdInputScanner.nextLine();
+					if (printMonthEntries.toUpperCase().equals("Y")) {
+						// print monthly income/expenses without budget info
+						boolean printBudget = false;
+						test.printMonth(month, year, printBudget);
+					}
+
+					JDateTime deleteDate = null;
+					int badDate;
+					do {
+						System.out.println("Enter Date To Remove Entry From (MM/DD/YYYY):");
+						inputDate = stdInputScanner.nextLine();
+						deleteDate = formatDate(inputDate);
+
+						// check to make sure there are any entries on this date
+						if (test.getDailyLedgerSingleEntryCount(deleteDate) > 0) {
+							badDate = 0;
+						} else {
+							badDate = 1;
+						}
+					} while (badDate == 1); 
+
+					System.out.println("Do you want me to print all the entries for " + deleteDate + "? (Y/N)");
+					String printDateEntries = stdInputScanner.nextLine();
+
+					if (printDateEntries.toUpperCase().equals("Y")) {
+						test.printDaysEntries(deleteDate);
+					} 
+
+					System.out.println("Enter index of which entry for " + deleteDate + " that you want to delete: (starting with 1)");
+					String inputIndex = stdInputScanner.nextLine();
+					int deleteIndex = Integer.parseInt(inputIndex);
+
+					try {
+					    test.deleteSingleEntry(deleteDate, deleteIndex-1);
+					} catch (IllegalArgumentException e) {
+						System.out.println(e);
+					}
+
+				} else {
+					System.out.println("Month " + month + " and year " + year + " don't exist in the general ledger");	
 				}
 			}
 
@@ -472,7 +531,8 @@ public class TestBudget {
 				int year = Integer.parseInt(stdInputScanner.nextLine());
 
 				try {
-					test.printMonth(month, year);
+					boolean printBudget = true;
+					test.printMonth(month, year, printBudget);
 				} catch (IllegalArgumentException e) {
 					System.out.println(e);	
 				} 
@@ -481,7 +541,8 @@ public class TestBudget {
 			// print the contents of the entire general ledger
 			if (menuChoice.toUpperCase().equals("PA")) {
 				try {
-					test.printAll();
+					boolean printBudget = true;
+					test.printAll(printBudget);
 				} catch (IllegalArgumentException e) {
 					System.out.println(e);	
 				} 

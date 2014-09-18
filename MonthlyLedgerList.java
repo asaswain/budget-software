@@ -40,15 +40,33 @@ public class MonthlyLedgerList {
 	/**
 	 * The returns the number of single entries in a specific month
 	 * 
-	 * @param month  the month to count entries in
-	 * @param year  the year of the month to count entries in
+	 * @param month - the month to count entries in
+	 * @param year - the year of the month to count entries in
 	 * @return the number of single entries in this month and year
 	 */
-	public int monthlySingleEntryCount(int month, int year) {
+	public int getMonthlySingleEntryCount(int month, int year) {
 		if (isMonthInLedger(month, year) == true) {
 			JDateTime monthYearId = new JDateTime(year, month, 1);
 			MonthlyLedger tempData = monthlyData.get(monthYearId);
-			return tempData.getSingleEntryCount();
+			return tempData.getMonthSingleEntryCount();
+		} else {
+			return 0;
+		}
+	}
+
+	/**
+	 * The returns the number of single entries in a specific date
+	 * 
+	 * @param month - the day to search for entries in 
+	 * @return the number of single entries in that date
+	 */
+	public int getDailySingleEntryCount(JDateTime searchDate) {
+		int month = searchDate.getMonth();
+		int year = searchDate.getYear();
+		if (isMonthInLedger(month, year) == true) {
+			JDateTime monthYearId = new JDateTime(year, month, 1);
+			MonthlyLedger tempData = monthlyData.get(monthYearId);
+			return tempData.getDaySingleEntryCount(searchDate);
 		} else {
 			return 0;
 		}
@@ -86,7 +104,7 @@ public class MonthlyLedgerList {
 			monthlyData.put(monthYearId, newLedger);	
 		}
 	}
-	
+
 	//TODO: Write new method RemoveMonthFromLedger(int month, int year)
 
 	/**
@@ -104,10 +122,14 @@ public class MonthlyLedgerList {
 		} 
 		JDateTime monthYearId = new JDateTime(year, month, 1);
 		MonthlyLedger tempData = monthlyData.get(monthYearId);
-		tempData.addSingleEntry(inputEntry);
+		try {
+			tempData.addSingleEntry(inputEntry);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(e);
+		}
 		monthlyData.put(monthYearId, tempData);	
 	}
-	
+
 	/**
 	 * This deletes a single entry from the ledger for a given month and year
 	 * 
@@ -124,7 +146,7 @@ public class MonthlyLedgerList {
 		} 
 		JDateTime monthYearId = new JDateTime(year, month, 1);
 		MonthlyLedger tempData = monthlyData.get(monthYearId);
-		
+
 		try {
 			tempData.deleteSingleEntry(targetDate, targetIndex);
 		} catch (IllegalArgumentException e) {
@@ -132,9 +154,9 @@ public class MonthlyLedgerList {
 		}
 		monthlyData.put(monthYearId, tempData);	
 	}
-	
+
 	//TODO: UpdateSingleEntryInLedger (call updateSingleEntry method)
-	
+
 	/**
 	 * This checks to see if a single entry is in the ledger for a given month and year
 	 * 
@@ -152,19 +174,20 @@ public class MonthlyLedgerList {
 	}
 
 	/**
-	 * This prints out all the entries for all months in the list
+	 * This prints out all the single entries for a single date in the ledger (and may print the budget as well)
 	 * 
-	 * @param month  month to print entries for
-	 * @param year  year to print entries for
+	 * @param searchDate - the date to print single entries for
 	 */
-	public void printMonthlyLedger(int month, int year) {
+	public void printDailyLedger(JDateTime searchDate) {
+		int month = searchDate.getMonth();
+		int year = searchDate.getYear();
 		if (isMonthInLedger(month, year) == false) {
-			throw new IllegalArgumentException(month + "-" + year + "doesn't exist in the general ledger.");
+			throw new IllegalArgumentException(month + "-" + year + " does not exist in the general ledger.");
 		} else {
 			try {
 				JDateTime monthYearId = new JDateTime(year, month, 1);
 				MonthlyLedger singleMonth = monthlyData.get(monthYearId);
-				singleMonth.printAllEntries();
+				singleMonth.printDaysEntries(searchDate);
 			} catch (IllegalArgumentException e) {
 				throw new IllegalArgumentException(e);
 			}
@@ -172,14 +195,37 @@ public class MonthlyLedgerList {
 	}
 
 	/**
-	 * This prints out all the entries for all months in the list
+	 * This prints out all the single entries for a single month in the ledger (and may print the budget as well)
+	 * 
+	 * @param month  month to print entries for
+	 * @param year  year to print entries for
+	 * @param printBudget - if true then also print budget info for this month
 	 */
-	public void printEntireLedger() {
+	public void printMonthlyLedger(int month, int year, boolean printBudget) {
+		if (isMonthInLedger(month, year) == false) {
+			throw new IllegalArgumentException(month + "-" + year + " does not exist in the general ledger.");
+		} else {
+			try {
+				JDateTime monthYearId = new JDateTime(year, month, 1);
+				MonthlyLedger singleMonth = monthlyData.get(monthYearId);
+				singleMonth.printAllEntries(printBudget);
+			} catch (IllegalArgumentException e) {
+				throw new IllegalArgumentException(e);
+			}
+		}
+	}
+
+	/**
+	 * This prints out all the entries for all months in the list (and may print the budget as well)
+	 * 
+	 * @param printBudget - if true then also print budget info for this month
+	 */
+	public void printEntireLedger(boolean printBudget) {
 		try {
 			//keySet returns a set of all the keys in the HashMap
 			for(JDateTime tmpDate : monthlyData.keySet()){
 				MonthlyLedger singleMonth = monthlyData.get(tmpDate);
-				singleMonth.printAllEntries();
+				singleMonth.printAllEntries(printBudget);
 			}
 		} catch (IllegalArgumentException e) {
 			throw new IllegalArgumentException(e);

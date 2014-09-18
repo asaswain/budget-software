@@ -70,10 +70,20 @@ public class MonthlyLedger {
 	 * 
 	 * @return an integer of the number of single entries in this month
 	 */
-	public int getSingleEntryCount() {
+	public int getMonthSingleEntryCount() {
 		return datedEntries.size();
 	}
-
+	
+	/**
+	 * This method returns the number of single entries in a date
+	 *
+	 * @param searchDate - the day we are searching for single entries in
+	 * @return an integer of the number of single entries in this day
+	 */
+	public int getDaySingleEntryCount(JDateTime searchDate) {
+		return datedEntries.size();
+	}
+	
 	/**
 	 * This method adds a single entry to the single entry list for this month
 	 * 
@@ -89,7 +99,11 @@ public class MonthlyLedger {
 		if (newEntry.getDate().getYear() != year) {
 			throw new IllegalArgumentException("Entry year does not match general ledger year.");
 		} 
-		datedEntries.addEntry(newEntry);		
+		try {
+			datedEntries.addEntry(newEntry);		
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(e);
+		}
 	}
 
 	/**
@@ -149,6 +163,7 @@ public class MonthlyLedger {
 
 	/**
 	 * This returns true if this single entry is in the general ledger for this month else returns false
+	 * 
 	 * @param testEntry - the single entry I am looking for
 	 * @return a true/false value for if the single entry is in the general ledger for this month
 	 */
@@ -157,14 +172,29 @@ public class MonthlyLedger {
 	}
 
 	/**
-	 * This prints a list of all income/expenses for a given month to the screen and prints the budget for the month
+	 * This prints a list of all income/expenses for a given month to the screen (and may print the budget for the month)
+	 * 
+	 * @param printBudget - if true then also print budget info for this month
 	 */
-	public void printAllEntries() {
+	public void printAllEntries(boolean printBudget) {
 		System.out.println("Ledger for " + month + "-" + year +" (displaying " + datedEntries.size() + " entries)");
-		datedEntries.printAllItems();
+		datedEntries.printAllEntries();
 		System.out.println("");
-		System.out.println("Budget for " + month + "-" + year);
-		myBudget.printBudget();
+		if (printBudget) {
+			System.out.println("Budget for " + month + "-" + year);
+			myBudget.printBudget();
+			System.out.println("");
+		}
+	};
+	
+	/**
+	 * This prints a list of all single entries for a given date to the screen
+	 * 
+	 * @param searchDate - the date to print single entries for
+	 */
+	public void printDaysEntries(JDateTime searchDate) {
+		System.out.println("Ledger for " + searchDate + " (displaying " + datedEntries.getNumberOfEntriesInDate(searchDate) + " entries)");
+		datedEntries.printDaysEntries(searchDate);
 		System.out.println("");
 	};
 
