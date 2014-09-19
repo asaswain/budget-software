@@ -16,10 +16,10 @@ import budget_program.SingleEntry;
 /**
  * This is a ledger with all the financial information for a single month, including:
  *
- * - a list of dated income and expense entries
- * - a list of repeating and installment entries
- * - a budget of amounts for each type of expense
- * - a month and year for this ledger
+ * 1. a list of dated income and expense entries
+ * 2. a list of repeating and installment entries
+ * 3. a budget of amounts for each type of expense
+ * 4. a month and year for this ledger
  * 
  * @author Asa Swain
  */

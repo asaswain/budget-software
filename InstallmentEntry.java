@@ -5,6 +5,7 @@ import jodd.datetime.JDateTime;
 /**
  * This entry object stores the data for an expense/income that repeats for a series of months
  * starting with the month of startDate and ending at the month of endDate
+ * 
  * @author Asa Swain
  *
  * <afs> 07/20/2014 this class is unfinished and currently not used

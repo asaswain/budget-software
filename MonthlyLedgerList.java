@@ -5,8 +5,9 @@ import java.util.*;
 import jodd.datetime.JDateTime;
 
 /**
- * This is a list of monthly ledger objects and an index to that list 
- * The index consists of JDateTime objects to make it easier to sort the months
+ * This class contains a list of monthly ledger objects, indexed in a HashMap by JDateTime objects 
+ * (to make it easier to sort the months)
+ * 
  * @author Asa Swain
  */
 

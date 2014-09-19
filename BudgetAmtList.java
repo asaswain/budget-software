@@ -3,7 +3,9 @@ package budget_program;
 import java.util.*;
 
 /**
- * This object stores a list of accounts and the associated budgeted amounts for a given month
+ * This class stores a Budget which consists of a hashmap containing a list of accounts and the budgeted amounts for each account
+ * Each MonthlyLedger has its own BudgetAmtList object.
+ * 
  * @author Asa Swain
  */
 

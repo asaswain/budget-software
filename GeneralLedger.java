@@ -6,8 +6,12 @@ import java.sql.*;
 import jodd.datetime.*;
 
 /**
- * This class is the master General Ledger class, which contains the list of accounts 
- * the income/expense entries for each month, the budget for each month and the name of the ledger
+ * This class is the master General Ledger class, which contains the following objects:
+ * 1. The list of accounts all amounts are divided among
+ * 2. A list of monthly ledgers and budgets
+ * 3. A default budget used when creating new monthly ledgers
+ * 4. The ledger name 
+ * 
  * @author Asa Swain
  */
 

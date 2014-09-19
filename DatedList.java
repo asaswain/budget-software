@@ -5,8 +5,10 @@ import java.util.*;
 import jodd.datetime.JDateTime;
 
 /**
-* The DatedList class consists of a HashMap of days indexed by date (for a single month)
-* and each day contains an ArrayList of single entries
+* The DatedList class consists of a HashMap of days indexed by date and each day contains an ArrayList of single entries.
+* The ArrayList of single entries is stores in the DaysEntries class.
+* Each MonthlyLedger contains a single DatedList object.
+* 
 * @author Asa Swain
 */
 

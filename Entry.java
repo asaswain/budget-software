@@ -1,7 +1,8 @@
 package budget_program;
 
 /**
- * This abstract class is the template for classes that store income/expenses in the general ledger
+ * This abstract class is the template for classes that store income and expenses in the general ledger 
+ * 
  * @author Asa Swain
  */
 
