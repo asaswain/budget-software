@@ -6,7 +6,7 @@ package budget_program;
  * @author Asa Swain
  */
 
-public class Type {
+public class Account {
 	// name of the Income/Expense type - should be unique
 	private String typeName;
 	// description of the Income/Expense type
@@ -20,7 +20,7 @@ public class Type {
 	/**
 	 * blank constructor
 	 */
-	public Type	(){
+	public Account	(){
 		typeName = "";
 		typeDesc = "";
 		isAnExpense = false;
@@ -35,7 +35,7 @@ public class Type {
 	 * @param expense - Is this account for expenses? (true/false)
 	 * @param inBudget - Are the expense/income amounts in this account included in the budget? (true/false)
 	 */
-	public Type	(String name, String desc, boolean expense, boolean inBudget){
+	public Account	(String name, String desc, boolean expense, boolean inBudget){
 		typeName = name;
 		typeDesc = desc;
 		isAnExpense = expense;

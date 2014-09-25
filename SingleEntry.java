@@ -21,7 +21,7 @@ public class SingleEntry extends Entry implements Comparable<SingleEntry>{
 	 */
 	public SingleEntry(){
 		date = new JDateTime(); // current date and time
-		entryType = new Type();
+		entryType = new Account();
 		desc = "";
 		amount = 0.00;
 	}
@@ -34,7 +34,7 @@ public class SingleEntry extends Entry implements Comparable<SingleEntry>{
 	 * @param newDesc - the description of the entry
 	 * @param newAmount - the amount of the entry
 	 */
-	public SingleEntry(JDateTime newDate, Type newType, String newDesc, double newAmount) {
+	public SingleEntry(JDateTime newDate, Account newType, String newDesc, double newAmount) {
 		date = newDate;
 		entryType = newType;
 		desc = newDesc;
@@ -55,7 +55,7 @@ public class SingleEntry extends Entry implements Comparable<SingleEntry>{
 	 * @param newDesc - the description of the entry 
 	 * @param newAmount - the amount of the entry
 	 */
-	public SingleEntry(int newDay, int newMonth, int newYear, Type newType, String newDesc, double newAmount) {
+	public SingleEntry(int newDay, int newMonth, int newYear, Account newType, String newDesc, double newAmount) {
 		date = new JDateTime(newYear,newMonth,newDay);
 		entryType = newType;
 		desc = newDesc;

@@ -5,31 +5,29 @@ import java.util.*;
 import jodd.datetime.JDateTime;
 
 /**
-* The DatedList class consists of a HashMap of days indexed by date and each day contains an ArrayList of single entries.
-* The ArrayList of single entries is stores in the DaysEntries class.
-* Each MonthlyLedger contains a single DatedList object.
+* The DatedList class consists of a TreeMap of days indexed by date and each day contains an ArrayList of single entries.
 * 
 * @author Asa Swain
 */
 
-public class DatedList {	
+public class SingleEntryList {	
 	// use date as key in HashMap to return an arraylist of entries for that date
-	private HashMap<JDateTime, DaysEntries> listDatedEntries;
+	private TreeMap<JDateTime, ArrayList<SingleEntry>> datedEntryList;
 
 	/**
 	 * This is a blank constructor
 	 */
-	public DatedList() {
-		listDatedEntries = new HashMap<JDateTime, DaysEntries>();
+	public SingleEntryList() {
+		datedEntryList = new TreeMap<JDateTime, ArrayList<SingleEntry>>();
 	}
 	
 	/**
 	 * This is a constructor for a single entry
 	 * 
-	 * @param newEntry  the entry to add to the HashMap
+	 * @param newEntry  the entry to add to the TreeMap
 	 */
-	public DatedList(SingleEntry newEntry) {
-		listDatedEntries = new HashMap<JDateTime, DaysEntries>();
+	public SingleEntryList(SingleEntry newEntry) {
+		datedEntryList = new TreeMap<JDateTime, ArrayList<SingleEntry>>();
 		addEntry(newEntry);
 	}
 	
@@ -39,64 +37,68 @@ public class DatedList {
 	 * @param newEntry  the new SingleEntry to add onto this day 
 	 */
 	public void addEntry(SingleEntry newEntry) {
-		DaysEntries tempDaysEntries;
-		if (listDatedEntries.containsKey(newEntry.getDate())) {
-			tempDaysEntries = listDatedEntries.get(newEntry.getDate());
-		} else {
-			tempDaysEntries = new DaysEntries(newEntry.getDate());
-		}
-		try {
-		tempDaysEntries.addEntry(newEntry);
-		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException(e);
-		}
-		listDatedEntries.put(newEntry.getDate(), tempDaysEntries);
+		ArrayList<SingleEntry> tmpList = new ArrayList<SingleEntry>();
+		if (datedEntryList.containsKey(newEntry.getDate())) {
+			tmpList = datedEntryList.get(newEntry.getDate());	
+		} 
+		tmpList.add(newEntry);
+		datedEntryList.put(newEntry.getDate(), tmpList);
 	}
 	
 	/**
-	 * This removes an entry from the list of entries for this month (making sure it's there first)
+	 * This removes an entry from the list of entries (making sure it's there first)
 	 *
 	 * @param targetDate - date of entry to delete
 	 * @param targetIndex - index of entry to delete
-	 * @exception IllegalArgumentException - if exception occurs in deleteEntry command
+	 * @exception IllegalArgumentException - if the list of entries for this date does not at least "targetIndex" number of items in it
 	 */
 	public void deleteEntry(JDateTime targetDate, int targetIndex) {
-		DaysEntries tempDaysEntries = listDatedEntries.get(targetDate);
-		try {
-			tempDaysEntries.deleteEntry(targetIndex);
-		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException(e);
+		ArrayList<SingleEntry> tmpList = datedEntryList.get(targetDate);
+		if (tmpList.contains(targetIndex)) {
+			tmpList.remove(targetIndex);
+		} else {
+			throw new IllegalArgumentException("The list of entries for this date: " + targetDate + " doesn't have the entry you are trying to delete");
 		}
-		listDatedEntries.put(targetDate,tempDaysEntries);
+		datedEntryList.put(targetDate,tmpList);
 	}
 	
 	/**
-	 * This removes the old SingleEntry and adds the new SingleEntry from the list of entries for this month
+	 * This removes an entry from the list of entries (making sure it's there first)
+	 *
+	 * @param delEntry - the SingleEntry to delete
+	 * @exception IllegalArgumentException - if the list of entries for this date does not contain the delEntry object
+	 */
+	public void deleteEntry(SingleEntry delEntry) {
+		ArrayList<SingleEntry> tmpList = datedEntryList.get(delEntry.getDate());
+		if (tmpList.contains(delEntry)) {
+			tmpList.remove(delEntry);
+			} else {
+				throw new IllegalArgumentException("The list of entries for this date: " + delEntry.getDate() + " doesn't have the entry you are trying to delete");
+			}
+		datedEntryList.put(delEntry.getDate(),tmpList);
+	}
+	
+	/**
+	 * This removes the old SingleEntry and adds the new SingleEntry from the list of entries
 	 *
 	 * @param oldEntry  the old SingleEntry to remove
 	 * @param newEntry  the new SingleEntry to add
 	 * @exception IllegalArgumentException - if the oldEntry does not exist on this day
 	 */
 	public void updateEntry(SingleEntry oldEntry, SingleEntry newEntry) {
-		// delete old entry
-		try {
-			updateEntry(oldEntry, newEntry);
-		} catch (IllegalArgumentException e){
-			throw new IllegalArgumentException(e);
-		}
-		// add new entry
+		deleteEntry(oldEntry);
 		addEntry(newEntry);
 	}
 	
 	/**
-	 * This checks if a single entry is in the list of entries for this month
+	 * This checks if a single entry is in the list of entries
 	 * 
 	 * @param testEntry - the entry we are searching for
 	 * @return true if this entry is in the month then return true, else return false
 	 */
 	public boolean isEntryInTheList(SingleEntry testEntry) {
-		DaysEntries tempDaysEntries = listDatedEntries.get(testEntry.getDate());	
-		return tempDaysEntries.isInDaysEntries(testEntry);
+		ArrayList<SingleEntry> tmpList = datedEntryList.get(testEntry.getDate());	
+		return tmpList.contains(testEntry);
 	}
 	
 	/**
@@ -107,20 +109,20 @@ public class DatedList {
 	 * @return a SingleEntry object
 	 */
 	public SingleEntry getEntry(JDateTime date, int loc) {
-		DaysEntries targetDaysEntries = listDatedEntries.get(date);
-		return targetDaysEntries.getEntry(loc);
+		ArrayList<SingleEntry> tmpList = datedEntryList.get(date);	
+		return tmpList.get(loc);
 	}
 	
 	/**
-	 * This returns the number of SingleEntries in all the days in the month
+	 * This returns the number of SingleEntries in the entire DatedList
 	 * 
 	 * @return the number of entries in this month
 	 */
 	public int size() {
 		int totalSize = 0;
-		//keySet returns a set of all the keys in the HashMap
-		for(JDateTime tmpDate : listDatedEntries.keySet()){
-			totalSize = totalSize + listDatedEntries.get(tmpDate).size();
+		//keySet returns a set of all the keys in the TreeMap
+		for(JDateTime tmpDate : datedEntryList.keySet()){
+			totalSize = totalSize + datedEntryList.get(tmpDate).size();
 		}
 		return totalSize;
 	}
@@ -132,30 +134,30 @@ public class DatedList {
 	 * @return the number of entries in that date
 	 */
 	public int getNumberOfEntriesInDate(JDateTime searchDate) {
-		return listDatedEntries.get(searchDate).size();
+		return datedEntryList.get(searchDate).size();
 	}
 	
 	/**
-	 * This prints all the single entries in the entire month
+	 * This prints all the single entries in the entire DatedList
 	 */
 	public void printAllEntries() {
-		//keySet returns a set of all the keys in the HashMap
-		for(JDateTime tmpDate : listDatedEntries.keySet()){
-			printDaysEntries(tmpDate);
+		//keySet returns a set of all the keys in the TreeMap
+		for(JDateTime tmpDate : datedEntryList.keySet()){
+			printDailyEntries(tmpDate);
 		}
 	}
 	
 	/**
 	 * This prints all the single entries on a specific date
 	 * 
-	 * @param date  the date to print all the entries for
+	 * @param date - the date to print all the entries for
 	 */
-	public void printDaysEntries(JDateTime date) {
-		DaysEntries targetDaysEntries = listDatedEntries.get(date);
+	public void printDailyEntries(JDateTime date) {
+		ArrayList<SingleEntry> tmpList = datedEntryList.get(date);	
 		
-		int listSize = targetDaysEntries.size();
+		int listSize = tmpList.size();
 		for (int i = 0; i < listSize; i++) {
-			targetDaysEntries.printListItem(i); 
+			tmpList.get(i).printEntry(); 
 		}
 	}
 	
@@ -166,59 +168,49 @@ public class DatedList {
 	public ArrayList<SingleEntry> getRawSingleEntryList() {
 		ArrayList<SingleEntry> masterList = new ArrayList<SingleEntry>();
 
-		//keySet returns a set of all the keys in the HashMap
-		for(JDateTime tmpDate : listDatedEntries.keySet()){
-			ArrayList<SingleEntry> tmpList = listDatedEntries.get(tmpDate).getRawSingleEntryList();
+		//keySet returns a set of all the keys in the TreeMap
+		for(JDateTime tmpDate : datedEntryList.keySet()){
+			ArrayList<SingleEntry> tmpList = datedEntryList.get(tmpDate);
 			masterList.addAll(tmpList);
 		}
-		
-/*		(old code)
-		// get a list of SingleEntruies for each month in monthlyData
-		Set<JDateTime> listDays = listDatedEntries.keySet();
-		Iterator<JDateTime> iterator = listDays.iterator();
-		while(iterator.hasNext()) {
-			JDateTime setDate = iterator.next();
-			ArrayList<SingleEntry> tmpList = listDatedEntries.get(setDate).getRawSingleEntryList();
-			masterList.addAll(tmpList);
-		}*/
 
 		return masterList;
 	};
 	
 	/** 
 	 * This private class stores an ArrayList of single entries for one date
-	 */
+	 *//*
 	private class DaysEntries implements Comparable<DaysEntries> {
 		// a list of income/expense entries
 		private ArrayList<SingleEntry> datedEntryList;
 		// the date for this list of entries (all entries on this list should have this date)
 		private JDateTime date;
 
-		/**
+		*//**
 		 * This is a blank constructor, if no date is passed in, use today's date
-		 */
+		 *//*
 		public DaysEntries() {
 			date = new JDateTime(); // current date and time
 			datedEntryList = new ArrayList<SingleEntry>();
 		}
 		
-		/**
+		*//**
 		 * This is a constructor to create a list of entries for a specific date
 		 * 
 		 * @param date  the date for this list of entries
-		 */
+		 *//*
 		public DaysEntries(JDateTime date) {
 			this.date = date; 
 			datedEntryList = new ArrayList<SingleEntry>();
 		}
 
-		/**
+		*//**
 		 * This adds a new SingleEntry onto end of list of entries for this day
 		 * 
 		 * @param newEntry  the entry to add onto this day's list
 		 * @throws IllegalArgumentException  if the date of the SingleEntry you are adding to this DaysEntries object
 		 * doesn't match the date of this DaysEntries object
-		 */
+		 *//*
 		public void addEntry(SingleEntry newEntry) {
 			if (newEntry.getDate().equals(date)) {
 				datedEntryList.add(newEntry);
@@ -229,12 +221,12 @@ public class DatedList {
 			}
 		}
 
-		/**
+		*//**
 		 * This deletes a single entry from this list
 		 * 
 		 * @param delEntry  the entry to remove from this day's list
 		 * @throws IllegalArgumentException  if the list for this date does not contain the delEntry object 
-		 */
+		 *//*
 		public void deleteEntry(SingleEntry delEntry) {
 			if (datedEntryList.contains(delEntry)) {
 			   datedEntryList.remove(delEntry);
@@ -243,12 +235,12 @@ public class DatedList {
 			}
 		}
 		
-		/**
+		*//**
 		 * This deletes the Nth entry from this list
 		 * 
 		 * @param index  the index of the entry to remove from this day's list
 		 * @throws IllegalArgumentException  if the list for this date does not at least "index" number of items in it
-		 */
+		 *//*
 		public void deleteEntry(int index) {
 			if (datedEntryList.size() > index) {
 			datedEntryList.remove(index);
@@ -257,13 +249,13 @@ public class DatedList {
 			}
 		}
 
-		/**
+		*//**
 		 * This replaces an old version of a SingleEntry with a new version
 		 * 
 		 * @param oldEntry  the old SingleEntry object to remove
 		 * @param newEntry  the new SingleEntry object to add
 		 * @throws IllegalArgumentException  if the list for this date does not contain the oldEntry object
-		 */
+		 *//*
 		public void updateEntry(SingleEntry oldEntry, SingleEntry newEntry) {
 			int loc = datedEntryList.indexOf(oldEntry);
 			if (loc != -1) {
@@ -273,13 +265,13 @@ public class DatedList {
 			}
 		}
 		
-		/**
+		*//**
 		 * This replaces the Nth entry in the list with a new version
 		 * 
 		 * @param index  the index of the SingleEntry object to overwrite
 		 * @param newEntry  the new SingleEntry object to add
 		 * @throws IllegalArgumentException  if the list for this date does not at least "index" number of items in it
-		 */
+		 *//*
 		public void updateEntry(int index, SingleEntry newEntry) {
 			if (datedEntryList.size() > index) {
 				datedEntryList.set(index, newEntry);
@@ -288,12 +280,12 @@ public class DatedList {
 			}
 		}
 
-		/**
+		*//**
 		 * This returns the Nth entry in the list
 		 * @param index  the index of the SingleEntry object to return
 		 * @returns one entry from this day
 		 * @throws  IllegalArgumentException  if the list for this date does not at least "index" number of items in it
-		 */
+		 *//*
 		
 		public SingleEntry getEntry(int index) {
 			if (datedEntryList.size() > index) {
@@ -303,30 +295,30 @@ public class DatedList {
 			}
 		}
 
-		/**
+		*//**
 		 * This returns the date for this object
 		 * 
 		 * @returns date of this list of entries
-		 */
+		 *//*
 		public JDateTime getDate() {
 			return date;
 		}
 
-		/**
+		*//**
 		 * This returns the number of entries in this object
 		 * 
 		 * @returns the number of entries in this day
-		 */
+		 *//*
 		public int size() {
 			return datedEntryList.size();
 		}
 
-		/**
+		*//**
 		 * This prints the Nth entry in the list
 		 * 
 		 * @param index  the index of the SingleEntry object to print
 		 * @throws IllegalArgumentException if the list for this date does not at least "index" number of items in it
-		 */
+		 *//*
 		public void printListItem(int index) {
 			if (datedEntryList.size() >= index) {
 				datedEntryList.get(index).printEntry();
@@ -335,21 +327,21 @@ public class DatedList {
 			}
 		}
 		
-		/**
+		*//**
 		 * This checks if this day contains a specific entry
 		 * 
 		 * @param newEntry  the new SingleEntry object to search for
 		 * @returns true/false (if this day contains the entry)
-		 */
+		 *//*
 		public boolean isInDaysEntries(SingleEntry testEntry) {
 			return datedEntryList.contains(testEntry);
 		}
 		
-		/**
+		*//**
 		 * This returns an ArrayList of all the SingleEntries in this day
 		 * 
 		 * @returns a list of all the SingleEntries in this day
-		 */
+		 *//*
 		public ArrayList<SingleEntry> getRawSingleEntryList() {
 			return datedEntryList;
 		}
@@ -357,19 +349,19 @@ public class DatedList {
 		//to do: show data for a specific month
 		//to do: show date for a date range
 
-		/**
+		*//**
 		 * This compare two entries and returns which is greater
 		 * 
 		 * @param  other objects to compare this object to
 		 * @returns Returns a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the specified object
-		 */
+		 *//*
 		public int compareTo(DaysEntries other ) {
 			return date.compareTo(other.getDate());	
 		}
 		
-		/* (non-Javadoc)
+		 (non-Javadoc)
 		 * @see java.lang.Object#hashCode()
-		 */
+		 
 		@Override
 		public int hashCode() {
 			final int prime = 31;
@@ -378,9 +370,9 @@ public class DatedList {
 			return result;
 		}
 
-		/* (non-Javadoc)
+		 (non-Javadoc)
 		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
+		 
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -397,6 +389,5 @@ public class DatedList {
 				return false;
 			return true;
 		}
-	}
-	
+	}*/
 }

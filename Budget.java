@@ -9,16 +9,16 @@ import java.util.*;
  * @author Asa Swain
  */
 
-public class BudgetAmtList {
+public class Budget {
 
 	// a hashmap of how much money was budgeted for each account (aka type)
-	private HashMap<Type,Double> budgetAccountList;
+	private HashMap<Account,Double> budgetAccountList;
 
 	/**
 	 * blank constructor
 	 */
-	public BudgetAmtList() {
-		budgetAccountList = new HashMap<Type,Double>();
+	public Budget() {
+		budgetAccountList = new HashMap<Account,Double>();
 	}
 
 	/**
@@ -26,8 +26,8 @@ public class BudgetAmtList {
 	 * 
 	 * @param originalBudget original budget to copy from when creating new BudgetAmtList object
 	 */
-	public BudgetAmtList(BudgetAmtList originalBudget) {
-		budgetAccountList = new HashMap<Type,Double>();
+	public Budget(Budget originalBudget) {
+		budgetAccountList = new HashMap<Account,Double>();
 		this.budgetAccountList = originalBudget.budgetAccountList;
 	}
 
@@ -41,7 +41,7 @@ public class BudgetAmtList {
 	 * @throws error if the account already exists in the budget
 	 * @throws error if the account type can't be budgeted  
 	 */
-	public void addAccount(Type newAccount, Double newBudgetAmount) {
+	public void addAccount(Account newAccount, Double newBudgetAmount) {
 		if (budgetAccountList.containsKey(newAccount) == true) {
 			throw new IllegalArgumentException("Account " + newAccount.getTypeName() + " already exists in the budget for this month.");	
 		} else {
@@ -62,7 +62,7 @@ public class BudgetAmtList {
 	 * 
 	 * @param deleteAccount The account to remove from the budget
 	 */
-	public void deleteAccount(Type deleteAccount) {
+	public void deleteAccount(Account deleteAccount) {
 		budgetAccountList.remove(deleteAccount);
 	}
 	
@@ -74,7 +74,7 @@ public class BudgetAmtList {
 	 * @param newBudgetAmount  the new budgeted amount
 	 * @throws an exception if the account isn't a budgeted account 
 	 */
-	public void updateBudgetAmount(Type account, Double newBudgetAmount) {
+	public void updateBudgetAmount(Account account, Double newBudgetAmount) {
 		if (account.getIsIncludedInBudget() == true) {
 			budgetAccountList.put(account,newBudgetAmount);
 		} else {
@@ -90,7 +90,7 @@ public class BudgetAmtList {
 	 * @param inputAccount  the account to look for
 	 * @return true if the account is in the budget account list, else false
 	 */
-	public boolean isAccountInList(Type inputAccount) {
+	public boolean isAccountInList(Account inputAccount) {
 		return budgetAccountList.containsKey(inputAccount);
 	}
 	
@@ -99,7 +99,7 @@ public class BudgetAmtList {
 	 * 
 	 * @return a set of all the accounts in this month's budget
 	 */
-	public Set<Type> getAccountList() {
+	public Set<Account> getAccountList() {
 		return budgetAccountList.keySet();
 	}
 	
@@ -120,7 +120,7 @@ public class BudgetAmtList {
 	 * @throws exception if the account isn't a budgeted account (according to Type object settings)
 	 * @return amount for this account
 	 */
-	public double getBudgetAmount(Type account) {
+	public double getBudgetAmount(Account account) {
 		if (budgetAccountList.containsKey(account)) {
 			if (account.getIsIncludedInBudget() == true) {
 				return budgetAccountList.get(account);
@@ -137,7 +137,7 @@ public class BudgetAmtList {
 	 */
 	public void printBudget() {
 		// extract data from DefaultBudget object - keySet returns a set of all the keys in the HashMap\
-		for(Type setAccount : budgetAccountList.keySet()){
+		for(Account setAccount : budgetAccountList.keySet()){
 			String printAccount = setAccount.getTypeName();
 			double printAmount = getBudgetAmount(setAccount);
 			System.out.println("Account: " + printAccount + " Budgeted Amount: " + printAmount);

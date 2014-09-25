@@ -24,12 +24,12 @@ public class InstallmentEntry extends Entry implements Comparable<InstallmentEnt
 	public InstallmentEntry(){
 		startDate = new JDateTime(); // current date and time
 		endDate = new JDateTime(); // current date and time
-		entryType = new Type();
+		entryType = new Account();
 		desc = "";
 		totalAmount = 0.00;
 	}
 
-	public InstallmentEntry(int startDay, int startMonth, int startYear, int endDay, int endMonth, int endYear, Type newType, String newDesc, double newAmount) {
+	public InstallmentEntry(int startDay, int startMonth, int startYear, int endDay, int endMonth, int endYear, Account newType, String newDesc, double newAmount) {
 		startDate = new JDateTime(startYear,startMonth,startDay);
 		endDate = new JDateTime(endYear,endMonth,endDay);
 		entryType = newType;

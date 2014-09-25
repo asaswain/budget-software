@@ -22,13 +22,13 @@ public class RepeatingEntry extends Entry implements Comparable<RepeatingEntry>{
 	public RepeatingEntry(){
 		startDate = new JDateTime(); // current date and time
 		endDate = new JDateTime(); // current date and time
-		entryType = new Type();
+		entryType = new Account();
 		desc = "";
 		monthlyAmount = 0.00;
 	}
 
 	// basic constructor
-	public RepeatingEntry(int startDay, int startMonth, int startYear, int endDay, int endMonth, int endYear, Type newType, String newDesc, double newAmount) {
+	public RepeatingEntry(int startDay, int startMonth, int startYear, int endDay, int endMonth, int endYear, Account newType, String newDesc, double newAmount) {
 		startDate = new JDateTime(startYear,startMonth,startDay);
 		endDate = new JDateTime(endYear,endMonth,endDay);
 		entryType = newType;

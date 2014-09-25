@@ -5,9 +5,13 @@ import java.util.*;
 import jodd.datetime.JDateTime;
 
 /**
- * This class provides a text-based user-interface to test the GeneralLedger class
+ * This class provides a text-based user-interface to let the user create and maintain a monthly ledger 
+ * and a budget using the GeneralLedger class
+ * 
  * @author Asa Swain
  */
+
+// TODO: print month method disabled
 
 public class TestBudget {
 
@@ -15,10 +19,10 @@ public class TestBudget {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		GeneralLedger test = new GeneralLedger();
+		GeneralLedger myGeneralLedger = new GeneralLedger();
 
 		// load SQL database data into Java data structures
-		test.loadSQLData();
+		myGeneralLedger.loadSQLData();
 
 		Scanner stdInputScanner = new Scanner( System.in );		
 
@@ -28,7 +32,7 @@ public class TestBudget {
 			System.out.println("Main Menu");
 			System.out.println("");
 			System.out.println("Add Data:");
-			System.out.println("AM - add new month to the database");
+			System.out.println("AM - add new monthly budget to the database");
 			System.out.println("AC - add an account to the database");
 			System.out.println("AE - add an entry to a specific month");
 			System.out.println("DE - delete an entry from a specific month"); 
@@ -55,7 +59,7 @@ public class TestBudget {
 				int year = Integer.parseInt(stdInputScanner.nextLine());
 
 				try {
-					test.addMonth(month, year);
+					myGeneralLedger.addBudget(month, year);
 				} catch (IllegalArgumentException e) {
 					System.out.println(e);	
 				} 
@@ -103,7 +107,7 @@ public class TestBudget {
 				}
 
 				try {
-					test.addAccount(inputName, inputDesc, inputIsAnExpense, inputIsInBudget, inputInDefaultAccountList, inputDefaultBudgetAmt);
+					myGeneralLedger.addAccount(inputName, inputDesc, inputIsAnExpense, inputIsInBudget, inputInDefaultAccountList, inputDefaultBudgetAmt);
 				} catch (IllegalArgumentException e) {
 					System.out.println(e);	
 				}
@@ -129,7 +133,7 @@ public class TestBudget {
 					String inputDesc = stdInputScanner.nextLine();
 
 					// select account
-					if (test.getAccountList().size() == 0) {
+					if (myGeneralLedger.getAccountList().size() == 0) {
 						System.out.println("Database has no accounts to choose from. Aborting input.");
 						return;
 					} 
@@ -138,13 +142,13 @@ public class TestBudget {
 					int badCategory;
 					do {
 						String categoryMsg = "Select account ";
-						for (int i = 0; i < test.getAccountList().size(); i++) {
-							categoryMsg = categoryMsg + i + "-" + test.getAccountList().get(i).getTypeName() + " ";
+						for (int i = 0; i < myGeneralLedger.getAccountList().size(); i++) {
+							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getTypeName() + " ";
 						}
 						System.out.println(categoryMsg);
 						inputNum = Integer.parseInt(stdInputScanner.nextLine());
 
-						if (inputNum > test.getAccountList().size()) {
+						if (inputNum > myGeneralLedger.getAccountList().size()) {
 							System.out.println("Invalid account number");	
 							badCategory = 1;
 						} else {
@@ -152,14 +156,14 @@ public class TestBudget {
 						}
 					} while (badCategory == 1);
 
-					Type inputType = test.getAccountList().get(inputNum);
+					Account inputType = myGeneralLedger.getAccountList().get(inputNum);
 
 					// enter amount
 					System.out.println("Enter Entry Amount:");
 					double inputAmt = Double.parseDouble(stdInputScanner.nextLine());
 
 					try {
-						test.addSingleEntry(entryDate, inputDesc, inputType, inputAmt);
+						myGeneralLedger.addSingleEntry(entryDate, inputDesc, inputType, inputAmt);
 					} catch (IllegalArgumentException e) {
 						System.out.println("Error: " + e);
 					}
@@ -187,7 +191,7 @@ public class TestBudget {
 					String inputDesc = stdInputScanner.nextLine();
 
 					// select account
-					if (test.getAccountList().size() == 0) {
+					if (myGeneralLedger.getAccountList().size() == 0) {
 						System.out.println("Database has no accounts to choose from. Aborting input.");
 						return;
 					} 
@@ -196,25 +200,25 @@ public class TestBudget {
 					int badCategory = 0;
 					do {
 						String categoryMsg = "Select account ";
-						for (int i = 0; i < test.getAccountList().size(); i++) {
-							categoryMsg = categoryMsg + i + "-" + test.getAccountList().get(i).getTypeName() + " ";
+						for (int i = 0; i < myGeneralLedger.getAccountList().size(); i++) {
+							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getTypeName() + " ";
 						}
 						System.out.println(categoryMsg);
 						inputNum = Integer.parseInt(stdInputScanner.nextLine());
 
-						if (inputNum > test.getAccountList().size()) {
+						if (inputNum > myGeneralLedger.getAccountList().size()) {
 							System.out.println("Invalid account number");	
 							badCategory = 1;
 						}
 					} while (badCategory == 1);
 
-					Type inputType = test.getAccountList().get(inputNum);
+					Type inputType = myGeneralLedger.getAccountList().get(inputNum);
 
 					// enter amount
 					System.out.println("Enter Amount For Each Month:");
 					double inputAmt = Double.parseDouble(stdInputScanner.nextLine());
 
-					test.addRepeatingEntry(startDate, endDate, inputDesc, inputType, inputAmt);*/
+					myGeneralLedger.addRepeatingEntry(startDate, endDate, inputDesc, inputType, inputAmt);*/
 				}
 
 				//installment entries
@@ -239,7 +243,7 @@ public class TestBudget {
 					String inputDesc = stdInputScanner.nextLine();
 
 					// select account
-					if (test.getAccountList().size() == 0) {
+					if (myGeneralLedger.getAccountList().size() == 0) {
 						System.out.println("Database has no accounts to choose from. Aborting input.");
 						return;
 					} 
@@ -248,25 +252,25 @@ public class TestBudget {
 					int badCategory = 0;
 					do {
 						String categoryMsg = "Select account ";
-						for (int i = 0; i < test.getAccountList().size(); i++) {
-							categoryMsg = categoryMsg + i + "-" + test.getAccountList().get(i).getTypeName() + " ";
+						for (int i = 0; i < myGeneralLedger.getAccountList().size(); i++) {
+							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getTypeName() + " ";
 						}
 						System.out.println(categoryMsg);
 						inputNum = Integer.parseInt(stdInputScanner.nextLine());
 
-						if (inputNum > test.getAccountList().size()) {
+						if (inputNum > myGeneralLedger.getAccountList().size()) {
 							System.out.println("Invalid account number");	
 							badCategory = 1;
 						}
 					} while (badCategory == 1);
 
-					Type inputType = test.getAccountList().get(inputNum);
+					Type inputType = myGeneralLedger.getAccountList().get(inputNum);
 
 					// enter amount
 					System.out.println("Enter Total Amount:");
 					double inputAmt = Double.parseDouble(stdInputScanner.nextLine());
 
-					test.addInstallmentEntry(startDate, endDate, inputDesc, inputType, inputAmt);*/
+					myGeneralLedger.addInstallmentEntry(startDate, endDate, inputDesc, inputType, inputAmt);*/
 				}
 			}
 
@@ -279,55 +283,46 @@ public class TestBudget {
 
 				JDateTime monthDate = formatDate(inputDate);
 
-				int month = monthDate.getMonth();
-				int year = monthDate.getYear();
-
-				if (test.isMonthInLedger(month, year) == true) {
-
-					System.out.println("Do you want me to print all the entries for this month? (Y/N)");
-					String printMonthEntries = stdInputScanner.nextLine();
-					if (printMonthEntries.toUpperCase().equals("Y")) {
-						// print monthly income/expenses without budget info
-						boolean printBudget = false;
-						test.printMonth(month, year, printBudget);
-					}
-
-					JDateTime deleteDate = null;
-					int badDate;
-					do {
-						System.out.println("Enter Date To Remove Entry From (MM/DD/YYYY):");
-						inputDate = stdInputScanner.nextLine();
-						deleteDate = formatDate(inputDate);
-
-						// check to make sure there are any entries on this date
-						if (test.getDailyLedgerSingleEntryCount(deleteDate) > 0) {
-							badDate = 0;
-						} else {
-							badDate = 1;
-						}
-					} while (badDate == 1); 
-
-					System.out.println("Do you want me to print all the entries for " + deleteDate + "? (Y/N)");
-					String printDateEntries = stdInputScanner.nextLine();
-
-					if (printDateEntries.toUpperCase().equals("Y")) {
-						test.printDaysEntries(deleteDate);
-					} 
-
-					System.out.println("Enter index of which entry for " + deleteDate + " that you want to delete: (starting with 1)");
-					String inputIndex = stdInputScanner.nextLine();
-					int deleteIndex = Integer.parseInt(inputIndex);
-
-					try {
-					    test.deleteSingleEntry(deleteDate, deleteIndex-1);
-					} catch (IllegalArgumentException e) {
-						System.out.println(e);
-					}
-
-				} else {
-					System.out.println("Month " + month + " and year " + year + " don't exist in the general ledger");	
+				System.out.println("Do you want me to print all the entries? (Y/N)");
+				String printMonthEntries = stdInputScanner.nextLine();
+				if (printMonthEntries.toUpperCase().equals("Y")) {
+					// print monthly income/expenses without budget info
+					boolean printBudget = false;
+					myGeneralLedger.printAllEntries();
 				}
-			}
+
+				JDateTime deleteDate = null;
+				int badDate;
+				do {
+					System.out.println("Enter Date To Remove Entry From (MM/DD/YYYY):");
+					inputDate = stdInputScanner.nextLine();
+					deleteDate = formatDate(inputDate);
+
+					// check to make sure there are any entries on this date
+					if (myGeneralLedger.getDailyLedgerSingleEntryCount(deleteDate) > 0) {
+						badDate = 0;
+					} else {
+						badDate = 1;
+					}
+				} while (badDate == 1); 
+
+				System.out.println("Do you want me to print all the entries for " + deleteDate + "? (Y/N)");
+				String printDateEntries = stdInputScanner.nextLine();
+
+				if (printDateEntries.toUpperCase().equals("Y")) {
+					myGeneralLedger.printDaysEntries(deleteDate);
+				} 
+
+				System.out.println("Enter index of which entry for " + deleteDate + " that you want to delete: (starting with 1)");
+				String inputIndex = stdInputScanner.nextLine();
+				int deleteIndex = Integer.parseInt(inputIndex);
+
+				try {
+					myGeneralLedger.deleteSingleEntry(deleteDate, deleteIndex-1);
+				} catch (IllegalArgumentException e) {
+					System.out.println(e);
+				}
+			} 
 
 			// configure default budget account/amount data
 			if (menuChoice.toUpperCase().equals("CD")) {
@@ -344,25 +339,25 @@ public class TestBudget {
 					int badCategory = 0;
 					do {
 						String categoryMsg = "Select account to add to budget ";
-						for (int i = 0; i < test.getAccountList().size(); i++) {
-							categoryMsg = categoryMsg + i + "-" + test.getAccountList().get(i).getTypeName() + " ";
+						for (int i = 0; i < myGeneralLedger.getAccountList().size(); i++) {
+							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getTypeName() + " ";
 						}
 						System.out.println(categoryMsg);
 						inputNum = Integer.parseInt(stdInputScanner.nextLine());
 
-						if (inputNum > test.getAccountList().size()) {
+						if (inputNum > myGeneralLedger.getAccountList().size()) {
 							System.out.println("Invalid category number");	
 							badCategory = 1;
 						}
 					} while (badCategory == 1);
 
-					Type inputType = test.getAccountList().get(inputNum);
+					Account inputType = myGeneralLedger.getAccountList().get(inputNum);
 
 					// enter amount
 					System.out.println("Enter default budget amount:");
 					double inputAmt = Double.parseDouble(stdInputScanner.nextLine());
 
-					test.addDefaultBudgetAcct(inputType,inputAmt);
+					myGeneralLedger.addDefaultBudgetAcct(inputType,inputAmt);
 				}
 
 				// remove account from account list
@@ -372,21 +367,21 @@ public class TestBudget {
 					int badCategory = 0;
 					do {
 						String categoryMsg = "Select account to remove ";
-						for (int i = 0; i < test.getAccountList().size(); i++) {
-							categoryMsg = categoryMsg + i + "-" + test.getAccountList().get(i).getTypeName() + " ";
+						for (int i = 0; i < myGeneralLedger.getAccountList().size(); i++) {
+							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getTypeName() + " ";
 						}
 						System.out.println(categoryMsg);
 						inputNum = Integer.parseInt(stdInputScanner.nextLine());
 
-						if (inputNum > test.getAccountList().size()) {
+						if (inputNum > myGeneralLedger.getAccountList().size()) {
 							System.out.println("Invalid category number");	
 							badCategory = 1;
 						}
 					} while (badCategory == 1);
 
-					Type inputType = test.getAccountList().get(inputNum);
+					Account inputType = myGeneralLedger.getAccountList().get(inputNum);
 
-					test.removeDefaultBudgetAcct(inputType);
+					myGeneralLedger.removeDefaultBudgetAcct(inputType);
 				}
 
 				// update account in account list
@@ -396,26 +391,26 @@ public class TestBudget {
 					int badCategory = 0;
 					do {
 						String categoryMsg = "Select account to add to budget ";
-						for (int i = 0; i < test.getAccountList().size(); i++) {
-							categoryMsg = categoryMsg + i + "-" + test.getAccountList().get(i).getTypeName() + " ";
+						for (int i = 0; i < myGeneralLedger.getAccountList().size(); i++) {
+							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getTypeName() + " ";
 						}
 						System.out.println(categoryMsg);
 						inputNum = Integer.parseInt(stdInputScanner.nextLine());
 
-						if (inputNum > test.getAccountList().size()) {
+						if (inputNum > myGeneralLedger.getAccountList().size()) {
 							System.out.println("Invalid category number");	
 							badCategory = 1;
 						}
 					} while (badCategory == 1);
 
-					Type inputType = test.getAccountList().get(inputNum);
+					Account inputType = myGeneralLedger.getAccountList().get(inputNum);
 
 					// enter amount
 					System.out.println("Enter default budget amount:");
 					double inputAmt = Double.parseDouble(stdInputScanner.nextLine());
 
 					try {
-						test.updateDefaultBudgetAmount(inputType,inputAmt);
+						myGeneralLedger.updateDefaultBudgetAmount(inputType,inputAmt);
 					} catch (IllegalArgumentException e) {
 						System.out.println(e);	
 					}
@@ -447,25 +442,25 @@ public class TestBudget {
 					int badCategory = 0;
 					do {
 						String categoryMsg = "Select account to add to monthly budget ";
-						for (int i = 0; i < test.getAccountList().size(); i++) {
-							categoryMsg = categoryMsg + i + "-" + test.getAccountList().get(i).getTypeName() + " ";
+						for (int i = 0; i < myGeneralLedger.getAccountList().size(); i++) {
+							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getTypeName() + " ";
 						}
 						System.out.println(categoryMsg);
 						inputNum = Integer.parseInt(stdInputScanner.nextLine());
 
-						if (inputNum > test.getAccountList().size()) {
+						if (inputNum > myGeneralLedger.getAccountList().size()) {
 							System.out.println("Invalid category number");	
 							badCategory = 1;
 						}
 					} while (badCategory == 1);
 
-					Type inputType = test.getAccountList().get(inputNum);
+					Account inputType = myGeneralLedger.getAccountList().get(inputNum);
 
 					// enter amount
 					System.out.println("Enter monthly budget amount:");
 					double inputAmt = Double.parseDouble(stdInputScanner.nextLine());
 
-					test.addMonthlyBudgetAcct(month,year,inputType,inputAmt);
+					myGeneralLedger.addMonthlyBudgetAcct(month,year,inputType,inputAmt);
 				}
 
 				if (menuChoice2 == 'R' || menuChoice2 == 'r') {
@@ -474,21 +469,21 @@ public class TestBudget {
 					int badCategory = 0;
 					do {
 						String categoryMsg = "Select account to remove from monthly budget";
-						for (int i = 0; i < test.getAccountList().size(); i++) {
-							categoryMsg = categoryMsg + i + "-" + test.getAccountList().get(i).getTypeName() + " ";
+						for (int i = 0; i < myGeneralLedger.getAccountList().size(); i++) {
+							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getTypeName() + " ";
 						}
 						System.out.println(categoryMsg);
 						inputNum = Integer.parseInt(stdInputScanner.nextLine());
 
-						if (inputNum > test.getAccountList().size()) {
+						if (inputNum > myGeneralLedger.getAccountList().size()) {
 							System.out.println("Invalid category number");	
 							badCategory = 1;
 						}
 					} while (badCategory == 1);
 
-					Type inputType = test.getAccountList().get(inputNum);
+					Account inputType = myGeneralLedger.getAccountList().get(inputNum);
 
-					test.removeMonthlyBudgetAcct(month,year,inputType);
+					myGeneralLedger.removeMonthlyBudgetAcct(month,year,inputType);
 				}
 
 				if (menuChoice2 == 'U' || menuChoice2 == 'u') {
@@ -497,26 +492,26 @@ public class TestBudget {
 					int badCategory = 0;
 					do {
 						String categoryMsg = "Select account to add to monthly budget";
-						for (int i = 0; i < test.getAccountList().size(); i++) {
-							categoryMsg = categoryMsg + i + "-" + test.getAccountList().get(i).getTypeName() + " ";
+						for (int i = 0; i < myGeneralLedger.getAccountList().size(); i++) {
+							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getTypeName() + " ";
 						}
 						System.out.println(categoryMsg);
 						inputNum = Integer.parseInt(stdInputScanner.nextLine());
 
-						if (inputNum > test.getAccountList().size()) {
+						if (inputNum > myGeneralLedger.getAccountList().size()) {
 							System.out.println("Invalid category number");	
 							badCategory = 1;
 						}
 					} while (badCategory == 1);
 
-					Type inputType = test.getAccountList().get(inputNum);
+					Account inputType = myGeneralLedger.getAccountList().get(inputNum);
 
 					// enter amount
 					System.out.println("Enter monthly budget amount:");
 					double inputAmt = Double.parseDouble(stdInputScanner.nextLine());
 
 					try {
-						test.updateMonthlyBudgetAmount(month,year,inputType,inputAmt);
+						myGeneralLedger.updateMonthlyBudgetAmount(month,year,inputType,inputAmt);
 					} catch (IllegalArgumentException e) {
 						System.out.println(e);	
 					}
@@ -530,19 +525,19 @@ public class TestBudget {
 				System.out.println("Enter the year to display:");	
 				int year = Integer.parseInt(stdInputScanner.nextLine());
 
-				try {
-					boolean printBudget = true;
-					test.printMonth(month, year, printBudget);
-				} catch (IllegalArgumentException e) {
-					System.out.println(e);	
-				} 
+//				try {
+//					boolean printBudget = true;
+//					myGeneralLedger.printMonth(month, year, printBudget);
+//				} catch (IllegalArgumentException e) {
+//					System.out.println(e);	
+//				} 
 			}
 
 			// print the contents of the entire general ledger
 			if (menuChoice.toUpperCase().equals("PA")) {
 				try {
 					boolean printBudget = true;
-					test.printAll(printBudget);
+					myGeneralLedger.printAllEntries();
 				} catch (IllegalArgumentException e) {
 					System.out.println(e);	
 				} 
@@ -551,7 +546,7 @@ public class TestBudget {
 			// print the contents of the entire general ledger
 			if (menuChoice.toUpperCase().equals("PD")) {
 				try {
-					test.printDefaultBudget();
+					myGeneralLedger.printDefaultBudget();
 				} catch (IllegalArgumentException e) {
 					System.out.println(e);	
 				} 
@@ -560,7 +555,7 @@ public class TestBudget {
 			// quiot program
 			if (menuChoice.toUpperCase().equals("Q")) {
 				abort = 1;
-				test.saveSQLData();
+				myGeneralLedger.saveSQLData();
 				System.out.println("Ending Program");
 			}
 

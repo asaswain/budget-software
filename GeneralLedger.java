@@ -15,8 +15,9 @@ import jodd.datetime.*;
  * @author Asa Swain
  */
 
-// 09/16/2014 MASTER TO DO LIST:
+// 09/20/2014 MASTER TO DO LIST:
 //
+//   -. Make a separate class that summarizes and prints the monthly entries and associated budgets
 //   1. finish working on deleteSingleEntry Method
 //   2. write a Update Single Entry Method
 //   3. write a Add Repeating Entry Method
@@ -28,12 +29,16 @@ import jodd.datetime.*;
 //05/09/2014 TODO: add a "getListOfMonths" method?
 
 public class GeneralLedger {
-	// list of data for each month
-	private MonthlyLedgerList monthlyData;
+	// list of income and expenses
+	private SingleEntryList singleEntryData;
+	// TODO: implement installment and repeating entries methods
+
+	// list of budgets for each month
+	private TreeMap<JDateTime,Budget> monthlyBudgetList;
 	// list of all general ledger accounts
-	private ArrayList<Type> accountList;
+	private ArrayList<Account> accountList;
 	// HashMap of default account list and amounts for each monthly budget
-	private BudgetAmtList defaultBudget;
+	private Budget defaultBudget;
 	// name of general ledger object
 	private String ledgerName;
 
@@ -43,9 +48,10 @@ public class GeneralLedger {
 	 * This is a blank constructor
 	 */
 	public GeneralLedger() {
-		monthlyData = new MonthlyLedgerList();
-		accountList = new ArrayList<Type>();
-		defaultBudget = new BudgetAmtList();
+		singleEntryData = new SingleEntryList();
+		monthlyBudgetList = new TreeMap<JDateTime,Budget>();
+		accountList = new ArrayList<Account>();
+		defaultBudget = new Budget();
 		ledgerName = "";
 		mySQLDatabase = new SQLDatabaseConnection();
 	}
@@ -84,7 +90,7 @@ public class GeneralLedger {
 	 */
 	public void addAccount(String inputName, String inputDesc, boolean isAnExpense, boolean isIncludedInBudget, boolean isInDefaultAcctList, double defaultBudgetAmount) {
 		// TODO: make sure no other account in list has the same name, names should be unique
-		Type inputAccount = new Type(inputName, inputDesc, isAnExpense, isIncludedInBudget);
+		Account inputAccount = new Account(inputName, inputDesc, isAnExpense, isIncludedInBudget);
 		if (accountList.contains(inputAccount) == false) {
 			accountList.add(inputAccount);
 			// check if we should also add the account to the default budget account list
@@ -106,7 +112,7 @@ public class GeneralLedger {
 	 * 
 	 * @param deleteAccount - the account to delete
 	 */
-	public void removeAccount(Type deleteAccount) {
+	public void removeAccount(Account deleteAccount) {
 		accountList.remove(deleteAccount);
 		if (defaultBudget.isAccountInList(deleteAccount) == true) {
 			defaultBudget.deleteAccount(deleteAccount);
@@ -119,24 +125,26 @@ public class GeneralLedger {
 	 * @param month - month to add to ledger
 	 * @param year - year of month to add to ledger
 	 */
-	public void addMonth(int month, int year) {
+	public void addBudget(int month, int year) {
 		try {
-			monthlyData.addMonthToLedger(month,year,defaultBudget);
+			JDateTime monthYearId = new JDateTime(year, month, 1);
+			Budget newBudget = defaultBudget;
+			monthlyBudgetList.put(monthYearId, newBudget);
 		} catch (IllegalArgumentException e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
-	
-	/**
-	 * This returns true if a ledger for this month and year has been created, else returns false
-	 * 
-	 * @param month - month we are searching for in ledger
-	 * @param year - year we are searching for in ledger
-	 * @return - true if a ledger for this month and year has been created, else returns false
-	 */
-	public boolean isMonthInLedger(int month, int year) {
-		return monthlyData.isMonthInLedger(month, year);
-	}
+
+	//	/**
+	//	 * This returns true if a ledger for this month and year has been created, else returns false
+	//	 * 
+	//	 * @param month - month we are searching for in ledger
+	//	 * @param year - year we are searching for in ledger
+	//	 * @return - true if a ledger for this month and year has been created, else returns false
+	//	 */
+	//	public boolean isMonthInLedger(int month, int year) {
+	//		return ledgerData.isMonthInLedger(month, year);
+	//	}
 
 	/**
 	 * This adds a Single Entry to a month
@@ -146,16 +154,16 @@ public class GeneralLedger {
 	 * @param inputType - account number for single entry
 	 * @param inputAmt - amount for single entry
 	 */
-	public void addSingleEntry(JDateTime inputDate, String inputDesc, Type inputType, double inputAmt) {
+	public void addSingleEntry(JDateTime inputDate, String inputDesc, Account inputType, double inputAmt) {
 		// create new SingleEntry
 		SingleEntry inputEntry = new SingleEntry(inputDate, inputType, inputDesc, inputAmt);
 		try {
-		monthlyData.addSingleEntryToLedger(inputDate.getMonth(), inputDate.getYear(), inputEntry);
+			singleEntryData.addEntry(inputEntry);
 		} catch (IllegalArgumentException e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
-	
+
 	/**
 	 * This deletes a single entry from a month
 	 * 
@@ -165,23 +173,23 @@ public class GeneralLedger {
 	 */
 	public void deleteSingleEntry(JDateTime targetDate, int targetIndex) {
 		try {
-			monthlyData.deleteSingleEntryFromLedger(targetDate, targetIndex);
+			singleEntryData.deleteEntry(targetDate, targetIndex);
 		} catch (IllegalArgumentException e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
-	
-	/**
-	 * Get the number of single entries in a given month of the general ledger
-	 * 
-	 * @param month - month of the ledger to search
-	 * @param year - year of the ledger to search
-	 * @return - number of single entries found in the month
-	 */
-	public int getMonthlyLedgerSingleEntryCount(int month, int year) {
-		return monthlyData.getMonthlySingleEntryCount(month, year);
-	}
-	
+
+	//	/**
+	//	 * Get the number of single entries in a given month of the general ledger
+	//	 * 
+	//	 * @param month - month of the ledger to search
+	//	 * @param year - year of the ledger to search
+	//	 * @return - number of single entries found in the month
+	//	 */
+	//	public int getMonthlyLedgerSingleEntryCount(int month, int year) {
+	//		return singleEntryData.getMonthlySingleEntryCount(month, year);
+	//	}
+
 	/**
 	 * Get the number of single entries in a given date of the general ledger
 	 * 
@@ -189,7 +197,7 @@ public class GeneralLedger {
 	 * @return - number of single entries found in the date
 	 */
 	public int getDailyLedgerSingleEntryCount(JDateTime searchDate) {
-		return monthlyData.getDailySingleEntryCount(searchDate);
+		return singleEntryData.getNumberOfEntriesInDate(searchDate);
 	}
 
 	/** 
@@ -197,7 +205,7 @@ public class GeneralLedger {
 	 * 
 	 * @return ArrayList<Type> accountList object
 	 */
-	public ArrayList<Type> getAccountList() {
+	public ArrayList<Account> getAccountList() {
 		return accountList;
 	}
 
@@ -208,38 +216,38 @@ public class GeneralLedger {
 	 */
 	public void printDaysEntries(JDateTime printDate) {
 		try {
-			monthlyData.printDailyLedger(printDate);
+			singleEntryData.printDailyEntries(printDate);
 		} catch (IllegalArgumentException e) {
 			throw new IllegalArgumentException(e);
 		} 
 	}
-	
-	/**
-	 * This prints all entries for a given month
-	 * 
-	 * @param month - month to print entries for
-	 * @param year - year to print entries for
-	 * @param printBudget - if true then also print budget info for this month
-	 */
-	public void printMonth(int month, int year, boolean printBudget) {
-		try {
-			monthlyData.printMonthlyLedger(month, year, printBudget);
-		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException(e);
-		} 
-	}
+
+	//	/**
+	//	 * This prints all entries for a given month
+	//	 * 
+	//	 * @param month - month to print entries for
+	//	 * @param year - year to print entries for
+	//	 * @param printBudget - if true then also print budget info for this month
+	//	 */
+	//	public void printMonth(int month, int year, boolean printBudget) {
+	//		try {
+	//			singleEntryData.printMonthlyLedger(month, year, printBudget);
+	//		} catch (IllegalArgumentException e) {
+	//			throw new IllegalArgumentException(e);
+	//		} 
+	//	}
 
 	/**
 	 * Print all entries for all months in the ledger
 	 * 
 	 * @param printBudget - if true then also print budget info for this month
 	 */
-	public void printAll(boolean printBudget) {
+	public void printAllEntries() {
 		try {
-			monthlyData.printEntireLedger(printBudget);
+			singleEntryData.printAllEntries();
 		} catch (IllegalArgumentException e) {
 			throw new IllegalArgumentException(e);
-		} 
+		}
 	}
 
 	/**
@@ -260,7 +268,7 @@ public class GeneralLedger {
 	 * @param newAccount - account to add to the default budget
 	 * @param newBudgetAmount - amount to budget for that account
 	 */
-	public void addDefaultBudgetAcct(Type newAccount, double newBudgetAmount){
+	public void addDefaultBudgetAcct(Account newAccount, double newBudgetAmount){
 		defaultBudget.addAccount(newAccount, newBudgetAmount);
 	}
 
@@ -269,7 +277,7 @@ public class GeneralLedger {
 	 * 
 	 * @param deleteAccount - the account to remove
 	 */
-	public void removeDefaultBudgetAcct(Type deleteAccount){
+	public void removeDefaultBudgetAcct(Account deleteAccount){
 		defaultBudget.deleteAccount(deleteAccount);
 	}
 
@@ -281,7 +289,7 @@ public class GeneralLedger {
 	 * 
 	 * @exception IllegalArgumentException if the account updateAccount is not in the default budget
 	 */
-	public void updateDefaultBudgetAmount(Type updateAccount, double newAmount) {
+	public void updateDefaultBudgetAmount(Account updateAccount, double newAmount) {
 		if (defaultBudget.isAccountInList(updateAccount) == true) {
 			defaultBudget.updateBudgetAmount(updateAccount, newAmount);
 		} else {
@@ -290,26 +298,39 @@ public class GeneralLedger {
 	}
 
 	/**
-	 * Add an account (and an associated amount) to a monthly budget
+	 * Add an account (and an associated amount) to the list of monthly budgets
 	 * 
 	 * @param month - month of budget to update
 	 * @param year - year of budget to update
 	 * @param newAccount - account to add to the default budget
 	 * @param newBudgetAmount - amount to budget for that account
 	 */
-	public void addMonthlyBudgetAcct(int month, int year, Type newAccount, double newBudgetAmount){
-		monthlyData.addMonthlyBudgetAcct(month, year, newAccount, newBudgetAmount);
+	public void addMonthlyBudgetAcct(int month, int year, Account newAccount, double newBudgetAmount) {
+		JDateTime monthYearId = new JDateTime(year, month, 1);
+		Budget tmpBudget = new Budget();
+		if (monthlyBudgetList.containsKey(monthYearId)) {
+			tmpBudget = monthlyBudgetList.get(monthYearId);
+		} 
+		tmpBudget.addAccount(newAccount, newBudgetAmount);
+		monthlyBudgetList.put(monthYearId, tmpBudget);
 	}
 
 	/**
-	 * Remove an account for a monthly budget
+	 * Remove an account for the list of monthly budgets
 	 * 
 	 * @param month - month - month of budget to update
 	 * @param year - year of budget to update
 	 * @param deleteAccount - the account to remove
 	 */
-	public void removeMonthlyBudgetAcct(int month, int year, Type deleteAccount){
-		monthlyData.removeMonthlyBudgetAcct(month, year, deleteAccount);
+	public void removeMonthlyBudgetAcct(int month, int year, Account deleteAccount) {
+		JDateTime monthYearId = new JDateTime(year, month, 1);
+		Budget tmpList = monthlyBudgetList.get(monthYearId);
+		if (tmpList.isAccountInList(deleteAccount)) {
+			tmpList.deleteAccount(deleteAccount);
+		} else {
+			throw new IllegalArgumentException("The list of entries for this month doesn't have the account you are trying to delete");
+		}
+		monthlyBudgetList.put(monthYearId,tmpList);
 	}
 
 	/**
@@ -322,9 +343,12 @@ public class GeneralLedger {
 	 * 
 	 * @exception IllegalArgumentException if the account updateAccount is not in the default budget
 	 */
-	public void updateMonthlyBudgetAmount(int month, int year, Type updateAccount, double newAmount) {
-		if (defaultBudget.isAccountInList(updateAccount) == true) {
-			monthlyData.updateMonthlyBudgetAmount(month, year, updateAccount, newAmount);
+	public void updateMonthlyBudgetAmount(int month, int year, Account updateAccount, double newAmount) {
+		JDateTime monthYearId = new JDateTime(year, month, 1);
+		Budget tmpList = monthlyBudgetList.get(monthYearId);
+
+		if (tmpList.isAccountInList(updateAccount) == true) {
+			tmpList.updateBudgetAmount(updateAccount, newAmount);
 		} else {
 			throw new IllegalArgumentException("Account " + updateAccount + " isn't in this month's budget.");
 		}
@@ -336,9 +360,9 @@ public class GeneralLedger {
 	 * 
 	 * @return account object or null if not found
 	 */
-	private Type getAccount(String accountName) {
+	private Account getAccount(String accountName) {
 		for (int i = 0; i < accountList.size(); i++) {
-			Type tempAccount = accountList.get(i);
+			Account tempAccount = accountList.get(i);
 			System.out.println(tempAccount.getTypeName());
 			if (tempAccount.getTypeName().equals(accountName)) {
 				return tempAccount;	
@@ -366,7 +390,7 @@ public class GeneralLedger {
 		private boolean SQLTablesExist[];
 
 		final int NBR_SQL_DATABASES = 4;
-		
+
 		/**
 		 * This is a blank constructor
 		 */
@@ -375,7 +399,7 @@ public class GeneralLedger {
 			initSQLConnection();
 			//TODO check for failed connection and throw error if unable to make connection
 			//if (connection == null) return;
-					
+
 			SQLTablesExist = new boolean[NBR_SQL_DATABASES];
 			for (int i = 0; i < NBR_SQL_DATABASES; i++) {
 				SQLTablesExist[i] = true;
@@ -449,11 +473,11 @@ public class GeneralLedger {
 				try {
 					if (commandType == "ReadTables") {
 						if (commandName.length() > 14 && commandName.substring(0, 14) == "verifySQLTables"){
-														
+
 							// verify that each of the SQL tables exist
 							DatabaseMetaData md = connection.getMetaData();
 							ResultSet rs = md.getTables(null, null, "%", null);
-							
+
 							while (rs.next()) {
 								if (rs.getString(3) == "account_List")   { SQLTablesExist[0] = true; }
 								if (rs.getString(3) == "general_ledger") { SQLTablesExist[1] = true; }
@@ -546,7 +570,7 @@ public class GeneralLedger {
 
 			if (commandName == "SaveAccountList") {
 				// number of statements = number of accounts
-				for (Type tmpAccount : accountList){
+				for (Account tmpAccount : accountList){
 					// extract data from accountList object		
 					String tmpName = tmpAccount.getTypeName();
 					tmpName = tmpName.replace("'", "''"); // replace single quotes with '' to make it compatible with SQL database
@@ -574,7 +598,7 @@ public class GeneralLedger {
 			if (commandName == "SaveMonthlyLedger") {
 				// number of statements = number of single entries in ledger so make a giant list of all the SingleEntry data from all months in the general ledger
 				ArrayList<SingleEntry> rawEntryList = new ArrayList<SingleEntry>();
-				rawEntryList = monthlyData.getRawSingleEntryList();
+				rawEntryList = singleEntryData.getRawSingleEntryList();
 				for (SingleEntry tmpEntry : rawEntryList){
 					// extract data from accountList object
 					JDateTime entryDate = tmpEntry.getDate();
@@ -587,6 +611,7 @@ public class GeneralLedger {
 					String tmpAccount = tmpEntry.getType().getTypeName();
 					tmpAccount = tmpAccount.replace("'", "''"); // replace single quotes with '' to make it compatible with SQL database
 					Double tmpAmount = tmpEntry.getAmount();
+					// intentionally ignore AUTONUM column which auto-generates an ID for this row
 					String tmpStatement = "INSERT INTO general_ledger (DATE, DESCRIPTION, ACCOUNT, AMOUNT) ";
 					tmpStatement += "VALUES ('"+tmpDate+"', '"+tmpDesc+"', '"+tmpAccount+"', '"+tmpAmount+"')";
 					statementList.add(tmpStatement);
@@ -595,7 +620,7 @@ public class GeneralLedger {
 
 			if (commandName == "SaveDefaultBudget") {
 				// extract account list from the DefaultBudget object - keySet returns a set of all the keys in the HashMap
-				for(Type setAccount : defaultBudget.getAccountList()){
+				for(Account setAccount : defaultBudget.getAccountList()){
 					String tmpAccount = setAccount.getTypeName();
 					tmpAccount = tmpAccount.replace("'", "''"); // replace single quotes with '' to make it compatible with SQL database
 					double tmpAmount = defaultBudget.getBudgetAmount(setAccount);
@@ -608,19 +633,18 @@ public class GeneralLedger {
 
 			if (commandName == "SaveMonthlyBudgets"){
 				// extract monthly budget dates from the monthlyData object - keySet returns a set of all the keys in the HashMap
-				for(JDateTime setDate : monthlyData.getMonthlyLedgerListDateList()){
-					int tmpMonth = setDate.getMonth();
-					int tmpYear = setDate.getYear();
-					String tmpMonthYear = tmpMonth + "-" + tmpYear;
-					BudgetAmtList tmpBudget = monthlyData.getBudgetInfo(setDate);
+				for(JDateTime tmpDate : monthlyBudgetList.keySet()){
+					int tmpMonth = tmpDate.getMonth();
+					int tmpYear = tmpDate.getYear();
+					Budget tmpBudget = monthlyBudgetList.get(tmpDate);
 					// extract account list from the tmpBudget object - keySet returns a set of all the keys in the HashMap
-					for (Type setAccount : tmpBudget.getAccountList()){
+					for (Account setAccount : tmpBudget.getAccountList()){
 						String tmpAccount = setAccount.getTypeName();
 						tmpAccount = tmpAccount.replace("'", "''"); // replace single quotes with '' to make it compatible with SQL database
 						double tmpAmount = tmpBudget.getBudgetAmount(setAccount);
-
-						String tmpStatement = "INSERT INTO monthly_budget (MONTHYEAR, MONTH, YEAR, ACCOUNT, AMOUNT) ";
-						tmpStatement += "VALUES ('"+tmpMonthYear+"','"+tmpMonth+"','"+tmpYear+"','"+tmpAccount+"', '"+tmpAmount+"')";
+						// intentionally ignore AUTONUM column which auto-generates an ID for this row
+						String tmpStatement = "INSERT INTO monthly_budget (MONTH, YEAR, ACCOUNT, AMOUNT) ";
+						tmpStatement += "VALUES ('"+tmpMonth+"','"+tmpYear+"','"+tmpAccount+"', '"+tmpAmount+"')";
 						statementList.add(tmpStatement);
 					}
 				}
@@ -628,7 +652,7 @@ public class GeneralLedger {
 
 			if(commandName.length() > 14 && commandName.substring(0,14) == "CreateSQLTable"){
 				String tableNbr = commandName.substring(14, 15);
-				
+
 				String tmpStatement = "";
 				if (tableNbr == "1") {
 					tmpStatement = "CREATE TABLE account_list (";
@@ -639,32 +663,34 @@ public class GeneralLedger {
 					tmpStatement += " PRIMARY KEY (name)";
 					tmpStatement += ");";
 				}
-				
+
 				if (tableNbr == "2") {
 					tmpStatement = "CREATE TABLE general_ledger (";
+					tmpStatement += " autonum VARCHAR(100) NOT NULL AUTO_INCREMENT, ";
 					tmpStatement += " date date DEFAULT NULL, ";
 					tmpStatement += " description VARCHAR(100) DEFAULT NULL,";
 					tmpStatement += " account VARCHAR(25) DEFAULT NULL,";
 					tmpStatement += " amount float DEFAULT NULL,";
-					tmpStatement += " PRIMARY KEY (date)";
+					tmpStatement += " PRIMARY KEY (autonum)";
 					tmpStatement += ");";
 				}
-				
+
 				if (tableNbr == "3") {
 					tmpStatement = "CREATE TABLE monthly_budget (";
-					tmpStatement += " monthyear VARCHAR(100) NOT NULL, ";
+					tmpStatement += " autonum VARCHAR(100) NOT NULL AUTO_INCREMENT, ";
 					tmpStatement += " month INT(10) NOT NULL,";
 					tmpStatement += " year INT(10) NOT NULL,";
 					tmpStatement += " account VARCHAR(25) DEFAULT NULL, ";
 					tmpStatement += " amount float DEFAULT NULL,";
-					tmpStatement += " PRIMARY KEY (monthyear)";
+					tmpStatement += " PRIMARY KEY (autonum)";
 					tmpStatement += ");";
 				}
-				
+
 				if (tableNbr == "4") {
 					tmpStatement = "CREATE TABLE default_budget (";
 					tmpStatement += " account VARCHAR(25) DEFAULT NULL, ";
 					tmpStatement += " amount float DEFAULT NULL,";
+					tmpStatement += " PRIMARY KEY (account)";
 					tmpStatement += ");";
 				}	
 				if (tmpStatement != "") {
@@ -720,7 +746,7 @@ public class GeneralLedger {
 					addAccount(accountName, accountDesc, isAnExpense, isInBudget, false, 0);
 				}
 				if (commandName == "LoadMonthlyBudgets") {
-					//String monthYear = resultSet.getString("MONTHYEAR");
+					// ignore AUTONUM column at beginning of MONTHLY_BUDGET table
 					String stringMonth = resultSet.getString("MONTH");
 					int budgetMonth = Integer.parseInt(stringMonth);
 					String stringYear = resultSet.getString("YEAR");
@@ -728,7 +754,7 @@ public class GeneralLedger {
 					String stringAccount = resultSet.getString("ACCOUNT");
 					stringAccount = stringAccount.replace("''", "'"); // replace single quotes with '' to make it compatible with SQL database
 					// get the Type object for this account name
-					Type budgetAccount = getAccount(stringAccount);
+					Account budgetAccount = getAccount(stringAccount);
 					String stringAmount = resultSet.getString("AMOUNT");
 					double budgetAmount = Double.parseDouble(stringAmount);
 					addMonthlyBudgetAcct(budgetMonth, budgetYear, budgetAccount, budgetAmount);
@@ -737,12 +763,13 @@ public class GeneralLedger {
 					String stringAccount = resultSet.getString("ACCOUNT");
 					stringAccount = stringAccount.replace("''", "'"); // replace single quotes with '' to make it compatible with SQL database
 					// get the Type object for this account name
-					Type budgetAccount = getAccount(stringAccount);
+					Account budgetAccount = getAccount(stringAccount);
 					String stringAmount = resultSet.getString("AMOUNT");
 					double budgetAmount = Double.parseDouble(stringAmount);
 					addDefaultBudgetAcct(budgetAccount, budgetAmount);
 				}
 				if (commandName == "LoadMonthlyLedger") {
+					// ignore AUTONUM column at beginning of GENERAL_LEDGER table
 					String stringDate = resultSet.getString("DATE");
 					// convert date from YYYY-MM-DD string into a JDateTime object
 					String parts[] = stringDate.split("-");
@@ -754,7 +781,7 @@ public class GeneralLedger {
 					entryDesc = entryDesc.replace("''", "'"); // replace single quotes with '' to make it compatible with SQL database
 					String stringAccount = resultSet.getString("ACCOUNT");	
 					stringAccount = stringAccount.replace("''", "'"); // replace single quotes with '' to make it compatible with SQL database
-					Type entryAccount = getAccount(stringAccount);
+					Account entryAccount = getAccount(stringAccount);
 					String stringAmount  = resultSet.getString("AMOUNT");
 					double entryAmount = Double.parseDouble(stringAmount);
 					// if this is an expense, multiple amount by -1 before entering into database
