@@ -8,9 +8,9 @@ package budget_program;
 
 public class Account {
 	// name of the Income/Expense type - should be unique
-	private String typeName;
+	private String accountName;
 	// description of the Income/Expense type
-	private String typeDesc;
+	private String accountDesc;
 	// is this type an Expense or an Income (entry amounts will always be positive,  
 	// and program needs to know if a category is an expense or an income)
 	private boolean isAnExpense;
@@ -21,8 +21,8 @@ public class Account {
 	 * blank constructor
 	 */
 	public Account	(){
-		typeName = "";
-		typeDesc = "";
+		accountName = "";
+		accountDesc = "";
 		isAnExpense = false;
 		isIncludedInBudget = false;
 	}
@@ -35,9 +35,9 @@ public class Account {
 	 * @param expense - Is this account for expenses? (true/false)
 	 * @param inBudget - Are the expense/income amounts in this account included in the budget? (true/false)
 	 */
-	public Account	(String name, String desc, boolean expense, boolean inBudget){
-		typeName = name;
-		typeDesc = desc;
+	public Account(String name, String desc, boolean expense, boolean inBudget){
+		accountName = name;
+		accountDesc = desc;
 		isAnExpense = expense;
 		isIncludedInBudget = inBudget;
 	}
@@ -47,8 +47,8 @@ public class Account {
 	 * 
 	 * @return account name
 	 */
-	public String getTypeName() {
-		return typeName;
+	public String getAccountName() {
+		return accountName;
 	}
 
 	/**
@@ -56,8 +56,8 @@ public class Account {
 	 * 
 	 * @param newName - new account name
 	 */
-	public void setTypeName(String newName) {
-		typeName = newName;
+	public void setAccountName(String newName) {
+		accountName = newName;
 	}
 
 	/**
@@ -65,8 +65,8 @@ public class Account {
 	 * 
 	 * @return account description
 	 */
-	public String getTypeDesc() {
-		return typeDesc;
+	public String getAccountDesc() {
+		return accountDesc;
 	}
 
 	/**
@@ -74,8 +74,8 @@ public class Account {
 	 * 
 	 * @param newDesc - new account description
 	 */
-	public void setTypeDesc(String newDesc) {
-		typeDesc = newDesc;
+	public void setAccountDesc(String newDesc) {
+		accountDesc = newDesc;
 	}
 
 	/**

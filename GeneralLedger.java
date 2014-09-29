@@ -118,6 +118,15 @@ public class GeneralLedger {
 			defaultBudget.deleteAccount(deleteAccount);
 		}
 	}
+	
+	/** 
+	 * This returns a list of all the accounts in the general ledger
+	 * 
+	 * @return ArrayList<Type> accountList object
+	 */
+	public ArrayList<Account> getAccountList() {
+		return accountList;
+	}
 
 	/**
 	 * Adds a new month to the ledger (an error is thrown if the month already exists in the ledger)
@@ -151,12 +160,12 @@ public class GeneralLedger {
 	 * 
 	 * @param inputDate - date for single entry
 	 * @param inputDesc - description of single entry
-	 * @param inputType - account number for single entry
+	 * @param inputAcct - account number for single entry
 	 * @param inputAmt - amount for single entry
 	 */
-	public void addSingleEntry(JDateTime inputDate, String inputDesc, Account inputType, double inputAmt) {
+	public void addSingleEntry(JDateTime inputDate, String inputDesc, Account inputAcct, double inputAmt) {
 		// create new SingleEntry
-		SingleEntry inputEntry = new SingleEntry(inputDate, inputType, inputDesc, inputAmt);
+		SingleEntry inputEntry = new SingleEntry(inputDate, inputAcct, inputDesc, inputAmt);
 		try {
 			singleEntryData.addEntry(inputEntry);
 		} catch (IllegalArgumentException e) {
@@ -167,9 +176,9 @@ public class GeneralLedger {
 	/**
 	 * This deletes a single entry from a month
 	 * 
-	 * @param entryDate - the date of the entry to delete
-	 * @param entryIndex - the index of the entry to delete on that date
-	 * @exception - if there is an error from the deleteSingleEntryFromLedger method
+	 * @param targetDate - the date of the entry to delete
+	 * @param targetIndex - the index of the entry to delete on that date
+	 * @exception - if there is an error from the deleteEntry method
 	 */
 	public void deleteSingleEntry(JDateTime targetDate, int targetIndex) {
 		try {
@@ -177,6 +186,38 @@ public class GeneralLedger {
 		} catch (IllegalArgumentException e) {
 			throw new IllegalArgumentException(e);
 		}
+	}
+	
+	/**
+	 * /**
+	 * This updates a single entry in a month
+	 * 
+	 * @param targetDate - the date of the entry to update
+	 * @param targetIndex - the index of the entry to update on that date
+	 * @param inputDate - the new date
+	 * @param inputDesc - the new description
+	 * @param inputAcct - the new type
+	 * @param inputAmt - the new amount
+	 * @exception - if there is an error from the updateEntry method
+	 */
+	public void updateSingleEntry(JDateTime targetDate, int targetIndex, JDateTime inputDate, String inputDesc, Account inputAcct, double inputAmt) {
+		try {
+			SingleEntry inputEntry = new SingleEntry(inputDate, inputAcct, inputDesc, inputAmt);
+			singleEntryData.updateEntry(targetDate, targetIndex, inputEntry);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(e);
+		}
+	}
+	
+	/**
+	 * Get the a single entry object for target date and target index
+	 * 
+	 * @param targetDate - the date of the entry to search for
+	 * @param targetIndex - the index of the entry to search for on that date
+	 * @return - a SingleEntry object
+	 */
+	public SingleEntry getDailyLedgerSingleEntry(JDateTime targetDate, int targetIndex) {
+		return singleEntryData.getSingleEntry(targetDate, targetIndex);
 	}
 
 	//	/**
@@ -198,15 +239,6 @@ public class GeneralLedger {
 	 */
 	public int getDailyLedgerSingleEntryCount(JDateTime searchDate) {
 		return singleEntryData.getNumberOfEntriesInDate(searchDate);
-	}
-
-	/** 
-	 * This returns a list of all the accounts in the general ledger
-	 * 
-	 * @return ArrayList<Type> accountList object
-	 */
-	public ArrayList<Account> getAccountList() {
-		return accountList;
 	}
 
 	/**
@@ -363,8 +395,8 @@ public class GeneralLedger {
 	private Account getAccount(String accountName) {
 		for (int i = 0; i < accountList.size(); i++) {
 			Account tempAccount = accountList.get(i);
-			System.out.println(tempAccount.getTypeName());
-			if (tempAccount.getTypeName().equals(accountName)) {
+			//System.out.println(tempAccount.getAccountName());
+			if (tempAccount.getAccountName().equals(accountName)) {
 				return tempAccount;	
 			}
 		}
@@ -572,9 +604,9 @@ public class GeneralLedger {
 				// number of statements = number of accounts
 				for (Account tmpAccount : accountList){
 					// extract data from accountList object		
-					String tmpName = tmpAccount.getTypeName();
+					String tmpName = tmpAccount.getAccountName();
 					tmpName = tmpName.replace("'", "''"); // replace single quotes with '' to make it compatible with SQL database
-					String tmpDesc = tmpAccount.getTypeDesc();
+					String tmpDesc = tmpAccount.getAccountDesc();
 					tmpDesc = tmpDesc.replace("'", "''"); // replace single quotes with '' to make it compatible with SQL database
 					char tmpIsAnExpense;
 					if (tmpAccount.getIsAnExpense() == true) {
@@ -608,7 +640,7 @@ public class GeneralLedger {
 					String tmpDate = (year  + "-" + month + "-" + day);
 					String tmpDesc = tmpEntry.getDesc();
 					tmpDesc = tmpDesc.replace("'", "''"); // replace single quotes with '' to make it compatible with SQL database
-					String tmpAccount = tmpEntry.getType().getTypeName();
+					String tmpAccount = tmpEntry.getAccount().getAccountName();
 					tmpAccount = tmpAccount.replace("'", "''"); // replace single quotes with '' to make it compatible with SQL database
 					Double tmpAmount = tmpEntry.getAmount();
 					// intentionally ignore AUTONUM column which auto-generates an ID for this row
@@ -621,7 +653,7 @@ public class GeneralLedger {
 			if (commandName == "SaveDefaultBudget") {
 				// extract account list from the DefaultBudget object - keySet returns a set of all the keys in the HashMap
 				for(Account setAccount : defaultBudget.getAccountList()){
-					String tmpAccount = setAccount.getTypeName();
+					String tmpAccount = setAccount.getAccountName();
 					tmpAccount = tmpAccount.replace("'", "''"); // replace single quotes with '' to make it compatible with SQL database
 					double tmpAmount = defaultBudget.getBudgetAmount(setAccount);
 
@@ -639,7 +671,7 @@ public class GeneralLedger {
 					Budget tmpBudget = monthlyBudgetList.get(tmpDate);
 					// extract account list from the tmpBudget object - keySet returns a set of all the keys in the HashMap
 					for (Account setAccount : tmpBudget.getAccountList()){
-						String tmpAccount = setAccount.getTypeName();
+						String tmpAccount = setAccount.getAccountName();
 						tmpAccount = tmpAccount.replace("'", "''"); // replace single quotes with '' to make it compatible with SQL database
 						double tmpAmount = tmpBudget.getBudgetAmount(setAccount);
 						// intentionally ignore AUTONUM column which auto-generates an ID for this row

@@ -43,7 +43,7 @@ public class Budget {
 	 */
 	public void addAccount(Account newAccount, Double newBudgetAmount) {
 		if (budgetAccountList.containsKey(newAccount) == true) {
-			throw new IllegalArgumentException("Account " + newAccount.getTypeName() + " already exists in the budget for this month.");	
+			throw new IllegalArgumentException("Account " + newAccount.getAccountName() + " already exists in the budget for this month.");	
 		} else {
 			if (newAccount.getIsIncludedInBudget() == true) {
 				budgetAccountList.put(newAccount,newBudgetAmount);
@@ -51,7 +51,7 @@ public class Budget {
 				// accounts outside the budget have no amount, so load a placeholder zero value
 				budgetAccountList.put(newAccount,(double)0);
 				if (newBudgetAmount != 0) {
-					throw new IllegalArgumentException("Account " + newAccount.getTypeName() + " isn't a budgeted account. Can't set a budget amount for this account.");
+					throw new IllegalArgumentException("Account " + newAccount.getAccountName() + " isn't a budgeted account. Can't set a budget amount for this account.");
 				}
 			}
 		}
@@ -138,7 +138,7 @@ public class Budget {
 	public void printBudget() {
 		// extract data from DefaultBudget object - keySet returns a set of all the keys in the HashMap\
 		for(Account setAccount : budgetAccountList.keySet()){
-			String printAccount = setAccount.getTypeName();
+			String printAccount = setAccount.getAccountName();
 			double printAmount = getBudgetAmount(setAccount);
 			System.out.println("Account: " + printAccount + " Budgeted Amount: " + printAmount);
 		}

@@ -21,7 +21,7 @@ public class SingleEntry extends Entry implements Comparable<SingleEntry>{
 	 */
 	public SingleEntry(){
 		date = new JDateTime(); // current date and time
-		entryType = new Account();
+		entryAccount = new Account();
 		desc = "";
 		amount = 0.00;
 	}
@@ -36,7 +36,7 @@ public class SingleEntry extends Entry implements Comparable<SingleEntry>{
 	 */
 	public SingleEntry(JDateTime newDate, Account newType, String newDesc, double newAmount) {
 		date = newDate;
-		entryType = newType;
+		entryAccount = newType;
 		desc = newDesc;
 		amount = newAmount;
 		// if expense type store amount as a negative number
@@ -57,7 +57,7 @@ public class SingleEntry extends Entry implements Comparable<SingleEntry>{
 	 */
 	public SingleEntry(int newDay, int newMonth, int newYear, Account newType, String newDesc, double newAmount) {
 		date = new JDateTime(newYear,newMonth,newDay);
-		entryType = newType;
+		entryAccount = newType;
 		desc = newDesc;
 		amount = newAmount;
 		// if expense type store amount as a negative number
@@ -119,7 +119,7 @@ public class SingleEntry extends Entry implements Comparable<SingleEntry>{
 	 * This prints the contents of a single entry
 	 */
 	public void printEntry() {
-		System.out.println("Date: " + date.toString("MM/DD/YYYY") + " Type: " + entryType.getTypeName() + " Desc: " + desc + " Amount: " + amount);
+		System.out.println("Date: " + date.toString("MM/DD/YYYY") + " Type: " + entryAccount.getAccountName() + " Desc: " + desc + " Amount: " + amount);
 	}
 
 	/**

@@ -8,7 +8,7 @@ package budget_program;
 
 public abstract class Entry {
 	// type of income/expense
-	protected Account entryType;
+	protected Account entryAccount;
 	// description of the income/expense
 	protected String desc;
 	
@@ -16,16 +16,16 @@ public abstract class Entry {
 	 * Get the type for this entry
 	 * @return entry type 
 	 */
-	public Account getType() {
-		return entryType;
+	public Account getAccount() {
+		return entryAccount;
 	}
 	
 	/** 
 	 * Set the type for this entry
 	 * @param newType - the new Type for this entry
 	 */
-	public void setType(Account newType) {
-		entryType = newType;
+	public void setAccount(Account newType) {
+		entryAccount = newType;
 	}
 	
 	/**

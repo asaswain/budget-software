@@ -12,6 +12,9 @@ import jodd.datetime.JDateTime;
  */
 
 // TODO: print month method disabled
+//       print budget data disabled
+//       add new move entries command which calls updateEntry with a new index for the order of the entry in the date
+//       add new print data class
 
 public class TestBudget {
 
@@ -36,6 +39,7 @@ public class TestBudget {
 			System.out.println("AC - add an account to the database");
 			System.out.println("AE - add an entry to a specific month");
 			System.out.println("DE - delete an entry from a specific month"); 
+			System.out.println("UE - update an entry from a specific month"); 
 			System.out.println("");
 			System.out.println("Configure Budget:");
 			System.out.println("CD - configure default budget account/amount data");
@@ -120,50 +124,44 @@ public class TestBudget {
 
 				// single entries
 				if (entryType.toUpperCase().equals("S")) {
+					
 					// enter date for entry
-					System.out.println("Enter Entry Date:");
-					String inputDate = stdInputScanner.nextLine();
-
-					JDateTime entryDate = formatDate(inputDate);
-
-					//System.out.println("You typed: " + entryDate.getMonth() + '-' + entryDate.getDay() + '-' + entryDate.getYear());
-
+					JDateTime entryDate;
+					try {
+						boolean checkForEntries = false;
+						boolean allowBlankInput = false;
+						entryDate = chooseDate(myGeneralLedger, stdInputScanner, "Enter Entry Date:", allowBlankInput, checkForEntries);
+					} catch (IllegalArgumentException e) {
+						System.out.println(e);
+						return;
+					}
+					
 					// enter description
 					System.out.println("Enter Entry Desc:");
 					String inputDesc = stdInputScanner.nextLine();
 
 					// select account
-					if (myGeneralLedger.getAccountList().size() == 0) {
-						System.out.println("Database has no accounts to choose from. Aborting input.");
+					boolean allowBlankInput = false;
+					Account inputAcct;
+					try {
+						inputAcct = chooseAccount(myGeneralLedger, stdInputScanner, "", allowBlankInput);
+					} catch (IllegalArgumentException e) {
+						System.out.println("Error: Database has no accounts to choose from. Aborting input.");
 						return;
-					} 
-
-					int inputNum = 0;
-					int badCategory;
-					do {
-						String categoryMsg = "Select account ";
-						for (int i = 0; i < myGeneralLedger.getAccountList().size(); i++) {
-							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getTypeName() + " ";
-						}
-						System.out.println(categoryMsg);
-						inputNum = Integer.parseInt(stdInputScanner.nextLine());
-
-						if (inputNum > myGeneralLedger.getAccountList().size()) {
-							System.out.println("Invalid account number");	
-							badCategory = 1;
-						} else {
-							badCategory = 0;
-						}
-					} while (badCategory == 1);
-
-					Account inputType = myGeneralLedger.getAccountList().get(inputNum);
+					}
 
 					// enter amount
 					System.out.println("Enter Entry Amount:");
-					double inputAmt = Double.parseDouble(stdInputScanner.nextLine());
-
+					double inputAmt;
 					try {
-						myGeneralLedger.addSingleEntry(entryDate, inputDesc, inputType, inputAmt);
+						inputAmt = Double.parseDouble(stdInputScanner.nextLine());
+					} catch (IllegalArgumentException e) {
+						System.out.println("Invalid amount. Aborting input");
+						return;
+					}
+					
+					try {
+						myGeneralLedger.addSingleEntry(entryDate, inputDesc, inputAcct, inputAmt);
 					} catch (IllegalArgumentException e) {
 						System.out.println("Error: " + e);
 					}
@@ -201,7 +199,7 @@ public class TestBudget {
 					do {
 						String categoryMsg = "Select account ";
 						for (int i = 0; i < myGeneralLedger.getAccountList().size(); i++) {
-							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getTypeName() + " ";
+							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getAccountName() + " ";
 						}
 						System.out.println(categoryMsg);
 						inputNum = Integer.parseInt(stdInputScanner.nextLine());
@@ -253,7 +251,7 @@ public class TestBudget {
 					do {
 						String categoryMsg = "Select account ";
 						for (int i = 0; i < myGeneralLedger.getAccountList().size(); i++) {
-							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getTypeName() + " ";
+							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getAccountName() + " ";
 						}
 						System.out.println(categoryMsg);
 						inputNum = Integer.parseInt(stdInputScanner.nextLine());
@@ -277,48 +275,127 @@ public class TestBudget {
 			// delete an entry from a specific month
 			if (menuChoice.toUpperCase().equals("DE")) {
 
-				// enter date for entry
-				System.out.println("Enter Date of Month To Remove Entry From (MM/DD/YYYY):");
-				String inputDate = stdInputScanner.nextLine();
+				// do we want to prompt user to print entries for a given date range or for a month?
 
-				JDateTime monthDate = formatDate(inputDate);
+				//				// enter date for entry
+				//				System.out.println("Enter Date of Month To Remove Entry From (MM/DD/YYYY):");
+				//				String inputDate = stdInputScanner.nextLine();
+				//
+				//				JDateTime monthDate = formatDate(inputDate);
+				//
+				//				System.out.println("Do you want me to print all the entries? (Y/N)");
+				//				String printMonthEntries = stdInputScanner.nextLine();
+				//				if (printMonthEntries.toUpperCase().equals("Y")) {
+				//					// print monthly income/expenses without budget info
+				//					boolean printBudget = false;
+				//					myGeneralLedger.printAllEntries();
+				//				}
 
-				System.out.println("Do you want me to print all the entries? (Y/N)");
-				String printMonthEntries = stdInputScanner.nextLine();
-				if (printMonthEntries.toUpperCase().equals("Y")) {
-					// print monthly income/expenses without budget info
-					boolean printBudget = false;
-					myGeneralLedger.printAllEntries();
-				}
-
-				JDateTime deleteDate = null;
-				int badDate;
-				do {
-					System.out.println("Enter Date To Remove Entry From (MM/DD/YYYY):");
-					inputDate = stdInputScanner.nextLine();
-					deleteDate = formatDate(inputDate);
-
-					// check to make sure there are any entries on this date
-					if (myGeneralLedger.getDailyLedgerSingleEntryCount(deleteDate) > 0) {
-						badDate = 0;
-					} else {
-						badDate = 1;
-					}
-				} while (badDate == 1); 
-
-				System.out.println("Do you want me to print all the entries for " + deleteDate + "? (Y/N)");
+				//				JDateTime deleteDate = null;
+				//				int badDate;
+				//				do {
+				//					System.out.println("Enter Date To Remove Entry From (MM/DD/YYYY):");
+				//					String inputDate = stdInputScanner.nextLine();
+				//					deleteDate = formatDate(inputDate);
+				//
+				//					// check to make sure there are any entries on this date
+				//					if (myGeneralLedger.getDailyLedgerSingleEntryCount(deleteDate) > 0) {
+				//						badDate = 0;
+				//					} else {
+				//						badDate = 1;
+				//					}
+				//				} while (badDate == 1); 
+				
+				boolean checkForEntries = true;
+				boolean allowBlankInput = false;
+				JDateTime deleteDate = chooseDate(myGeneralLedger, stdInputScanner, "Enter Date To Remove Entry From (MM/DD/YYYY):", allowBlankInput, checkForEntries);
+				System.out.println("Do you want to see all the entries for " + convertDatetoString(deleteDate) + "? (Y/N)");
 				String printDateEntries = stdInputScanner.nextLine();
 
 				if (printDateEntries.toUpperCase().equals("Y")) {
 					myGeneralLedger.printDaysEntries(deleteDate);
 				} 
 
-				System.out.println("Enter index of which entry for " + deleteDate + " that you want to delete: (starting with 1)");
+				System.out.println("Enter index of which entry for " + convertDatetoString(deleteDate) + " that you want to delete: (starting with 1)");
 				String inputIndex = stdInputScanner.nextLine();
 				int deleteIndex = Integer.parseInt(inputIndex);
 
 				try {
 					myGeneralLedger.deleteSingleEntry(deleteDate, deleteIndex-1);
+				} catch (IllegalArgumentException e) {
+					System.out.println(e);
+				}
+			} 
+
+			// update an entry from a specific month
+			if (menuChoice.toUpperCase().equals("UE")) {
+				
+				// do we want to prompt user to print entries for a given date range or for a month?
+				boolean checkForEntries = true;
+				boolean allowBlankInput = false;
+				JDateTime updateDate = chooseDate(myGeneralLedger, stdInputScanner, "Enter Date To Update Entry On (MM/DD/YYYY):", allowBlankInput, checkForEntries);
+				System.out.println("Do you want to see all the entries for " + convertDatetoString(updateDate) + "? (Y/N)");
+				String printDateEntries = stdInputScanner.nextLine();
+
+				if (printDateEntries.toUpperCase().equals("Y")) {
+					myGeneralLedger.printDaysEntries(updateDate);
+				} 
+
+				System.out.println("Enter index of which entry for " + convertDatetoString(updateDate) + " that you want to update: (starting with 1)");
+				String inputIndex = stdInputScanner.nextLine();
+				int updateIndex = Integer.parseInt(inputIndex);
+
+				SingleEntry tmpEntry = myGeneralLedger.getDailyLedgerSingleEntry(updateDate, updateIndex-1);
+				
+				String oldDesc = tmpEntry.getDesc();
+				JDateTime oldDate = tmpEntry.getDate();
+				Account oldAcct = tmpEntry.getAccount();
+				double oldAmt = tmpEntry.getAmount();
+				
+				String newDesc;
+				JDateTime newDate;
+				Account newAcct;
+				double newAmt;
+				
+				System.out.println("Old description is " + oldDesc);
+				System.out.println("Enter new description or leave blank to keep old description:");
+				newDesc = stdInputScanner.nextLine();
+				if (newDesc == "") {
+					newDesc = oldDesc;
+				}
+				
+				System.out.println("Old entry date is " + convertDatetoString(oldDate));
+				System.out.println("Enter new date or leave blank to keep old date:");
+				String tmpDate = stdInputScanner.nextLine();
+				if (tmpDate.equals("")) {
+					newDate = oldDate;
+				} else {
+					newDate = convertStringToDate(tmpDate);
+				}
+				
+				System.out.println("Old account is " + oldAcct.getAccountName());
+				try {
+					boolean allowBlankInput2 = true;
+					newAcct = chooseAccount(myGeneralLedger, stdInputScanner, "Enter new account or leave blank to keep old account:", allowBlankInput2);
+				} catch (IllegalArgumentException e) {
+					System.out.println("Error: Database has no accounts to choose from. Aborting input.");
+					return;
+				}
+				if (newAcct == null) {
+					newAcct = oldAcct;
+				}
+				
+				System.out.println("Old amount is " + oldAmt);
+				System.out.println("Enter new amount or leave blank to keep old amount:");
+				String tmpAmt = stdInputScanner.nextLine();
+				if (tmpAmt.equals("")) {
+					newAmt = oldAmt;
+				} else {
+					newAmt = Double.parseDouble(tmpAmt);
+				}
+				
+				try {
+					myGeneralLedger.updateSingleEntry(updateDate, updateIndex-1, newDate, newDesc, newAcct, newAmt);
 				} catch (IllegalArgumentException e) {
 					System.out.println(e);
 				}
@@ -340,7 +417,7 @@ public class TestBudget {
 					do {
 						String categoryMsg = "Select account to add to budget ";
 						for (int i = 0; i < myGeneralLedger.getAccountList().size(); i++) {
-							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getTypeName() + " ";
+							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getAccountName() + " ";
 						}
 						System.out.println(categoryMsg);
 						inputNum = Integer.parseInt(stdInputScanner.nextLine());
@@ -368,7 +445,7 @@ public class TestBudget {
 					do {
 						String categoryMsg = "Select account to remove ";
 						for (int i = 0; i < myGeneralLedger.getAccountList().size(); i++) {
-							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getTypeName() + " ";
+							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getAccountName() + " ";
 						}
 						System.out.println(categoryMsg);
 						inputNum = Integer.parseInt(stdInputScanner.nextLine());
@@ -392,7 +469,7 @@ public class TestBudget {
 					do {
 						String categoryMsg = "Select account to add to budget ";
 						for (int i = 0; i < myGeneralLedger.getAccountList().size(); i++) {
-							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getTypeName() + " ";
+							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getAccountName() + " ";
 						}
 						System.out.println(categoryMsg);
 						inputNum = Integer.parseInt(stdInputScanner.nextLine());
@@ -424,7 +501,7 @@ public class TestBudget {
 				System.out.println("Enter a date for which month to update:");
 				String inputDate = stdInputScanner.nextLine();
 
-				JDateTime tempDate = formatDate(inputDate);
+				JDateTime tempDate = convertStringToDate(inputDate);
 
 				int month = tempDate.getMonth();
 				int year = tempDate.getYear();
@@ -443,7 +520,7 @@ public class TestBudget {
 					do {
 						String categoryMsg = "Select account to add to monthly budget ";
 						for (int i = 0; i < myGeneralLedger.getAccountList().size(); i++) {
-							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getTypeName() + " ";
+							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getAccountName() + " ";
 						}
 						System.out.println(categoryMsg);
 						inputNum = Integer.parseInt(stdInputScanner.nextLine());
@@ -470,7 +547,7 @@ public class TestBudget {
 					do {
 						String categoryMsg = "Select account to remove from monthly budget";
 						for (int i = 0; i < myGeneralLedger.getAccountList().size(); i++) {
-							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getTypeName() + " ";
+							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getAccountName() + " ";
 						}
 						System.out.println(categoryMsg);
 						inputNum = Integer.parseInt(stdInputScanner.nextLine());
@@ -493,7 +570,7 @@ public class TestBudget {
 					do {
 						String categoryMsg = "Select account to add to monthly budget";
 						for (int i = 0; i < myGeneralLedger.getAccountList().size(); i++) {
-							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getTypeName() + " ";
+							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getAccountName() + " ";
 						}
 						System.out.println(categoryMsg);
 						inputNum = Integer.parseInt(stdInputScanner.nextLine());
@@ -525,12 +602,12 @@ public class TestBudget {
 				System.out.println("Enter the year to display:");	
 				int year = Integer.parseInt(stdInputScanner.nextLine());
 
-//				try {
-//					boolean printBudget = true;
-//					myGeneralLedger.printMonth(month, year, printBudget);
-//				} catch (IllegalArgumentException e) {
-//					System.out.println(e);	
-//				} 
+				//				try {
+				//					boolean printBudget = true;
+				//					myGeneralLedger.printMonth(month, year, printBudget);
+				//				} catch (IllegalArgumentException e) {
+				//					System.out.println(e);	
+				//				} 
 			}
 
 			// print the contents of the entire general ledger
@@ -552,7 +629,7 @@ public class TestBudget {
 				} 
 			}
 
-			// quiot program
+			// quit program
 			if (menuChoice.toUpperCase().equals("Q")) {
 				abort = 1;
 				myGeneralLedger.saveSQLData();
@@ -567,7 +644,122 @@ public class TestBudget {
 		} while (abort == 0);
 	}
 
-	private static JDateTime formatDate(String inputDate) {
+	/**
+	 * This prompts the user to choose an account number from the list of all accounts
+	 * 
+	 * @param glData - general ledger object
+	 * @param inputScanner - scanner object used to process user's input
+	 * @param prompt - string to display before selecting account
+	 * @param allowBlankInput - boolean that controls if we allow blank input
+	 * @exception - if glData has no account to choose from
+	 * @return - Account object chosen by user
+	 */
+	private static Account chooseAccount(GeneralLedger glData, Scanner inputScanner, String prompt, boolean allowBlankInput) {
+		if (glData.getAccountList().size() == 0) {
+			throw new IllegalArgumentException("The general ledger has no accounts to select from.");
+		} 
+		if (prompt != "") {
+			System.out.println(prompt);
+		}
+		
+		int badInput;
+		int inputNum = 0;
+		
+		do {
+			badInput = 0;
+			
+			String categoryMsg = "Select account ";
+			for (int i = 0; i < glData.getAccountList().size(); i++) {
+				categoryMsg = categoryMsg + i + "-" + glData.getAccountList().get(i).getAccountName() + " ";
+			}
+			System.out.println(categoryMsg);
+			String stringInput = inputScanner.nextLine();
+			if (!stringInput.equals("")) {
+				try { 
+					inputNum = Integer.parseInt(stringInput); 
+			    } catch(NumberFormatException e) { 
+			    	System.out.println("Input is not a number.");	
+			        badInput = 1;
+			    }
+			} else {
+				if (allowBlankInput == true) {
+					return null;
+				} else {
+					System.out.println("Can't enter a blank number.");	
+					badInput = 1;
+				}
+			}
+
+			if (badInput == 0) {			
+				if (inputNum > glData.getAccountList().size()) {
+					System.out.println("Invalid account number.");	
+					badInput = 1;
+				}  
+			}
+		} while (badInput == 1);
+
+		return glData.getAccountList().get(inputNum);	
+	}
+	
+	/**
+	 * This prompts the user to enter a date
+	 * 
+	 * @param glData - general ledger object
+	 * @param inputScanner - scanner object used to process user's input
+	 * @param prompt - string to display before entering date
+	 * @param allowBlankInput - boolean that controls if we allow blank input
+	 * @param checkForEntries - check if general ledger has entries for this date
+	 * @return - JDateTime object for date entered by user
+	 */
+	private static JDateTime chooseDate(GeneralLedger glData, Scanner inputScanner, String prompt, boolean allowBlankInput, boolean checkForEntries) {
+		JDateTime newDate = null;
+
+		int badDate;
+		do {
+			badDate = 0;
+
+			System.out.println(prompt);
+			String stringInput = inputScanner.nextLine();
+			if (!stringInput.equals("")) {
+				try {
+					newDate = convertStringToDate(stringInput);
+				} catch (IllegalArgumentException e) {
+					System.out.println("Invalid date.");	
+					badDate = 1;
+				} catch (ArrayIndexOutOfBoundsException e){
+					System.out.println("Invalid date.");	
+					badDate = 1;
+				}
+			} else {
+				if (allowBlankInput == true) {
+					return null;
+				} else {
+					System.out.println("Can't enter a blank date.");	
+					badDate = 1;
+				}
+			}
+
+			if (badDate == 0) {
+				if (checkForEntries == true) {
+					// check to make sure there are entries on this date
+					if (glData.getDailyLedgerSingleEntryCount(newDate) == 0) {
+						System.out.println("No entries found on this date. Enter a different date.");	
+						badDate = 1;
+					} 
+				} 
+			}
+		} while (badDate == 1);
+
+		return newDate;
+	}
+	
+	/**
+	 * This method converts a string input into a JDateTime object
+	 * 
+	 * @param inputDate - the string containing the date text
+	 * @return - JDateTime object containing the date
+	 */
+	private static JDateTime convertStringToDate(String inputDate) {
 		// replace periods with slashes
 		if (inputDate.contains(".") == true) {
 			inputDate = inputDate.replace(".","/");
@@ -584,4 +776,16 @@ public class TestBudget {
 
 		return new JDateTime(year, month, day);
 	}
+	
+	/**
+	 * This method converts a JDateTime object into a string object
+	 * 
+	 * @param inputDate - the JDateTime object containing the date
+	 * @return - String object containing the date printed out
+	 */
+	private static String convertDatetoString(JDateTime inputDate) {
+		return (inputDate.getMonth() + "/" + inputDate.getDay() + "/" + inputDate.getYear());
+	}
+	
+	
 }
