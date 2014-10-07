@@ -11,8 +11,7 @@ import jodd.datetime.JDateTime;
  * @author Asa Swain
  */
 
-// TODO: print month method disabled
-//       print budget data disabled
+// TODO: print budget data disabled
 //       add new move entries command which calls updateEntry with a new index for the order of the entry in the date
 //       add new print data class
 
@@ -602,12 +601,12 @@ public class TestBudget {
 				System.out.println("Enter the year to display:");	
 				int year = Integer.parseInt(stdInputScanner.nextLine());
 
-				//				try {
-				//					boolean printBudget = true;
-				//					myGeneralLedger.printMonth(month, year, printBudget);
-				//				} catch (IllegalArgumentException e) {
-				//					System.out.println(e);	
-				//				} 
+				try {
+					//boolean printBudget = true;
+					myGeneralLedger.printMonth(month, year);
+				} catch (IllegalArgumentException e) {
+					System.out.println(e);	
+				} 
 			}
 
 			// print the contents of the entire general ledger
@@ -754,9 +753,9 @@ public class TestBudget {
 	}
 	
 	/**
-	 * This method converts a string input into a JDateTime object
+	 * This method converts a String input into a JDateTime object
 	 * 
-	 * @param inputDate - the string containing the date text
+	 * @param inputDate - String containing the date text
 	 * @return - JDateTime object containing the date
 	 */
 	private static JDateTime convertStringToDate(String inputDate) {
@@ -778,10 +777,10 @@ public class TestBudget {
 	}
 	
 	/**
-	 * This method converts a JDateTime object into a string object
+	 * This method converts a JDateTime object into a String object
 	 * 
-	 * @param inputDate - the JDateTime object containing the date
-	 * @return - String object containing the date printed out
+	 * @param inputDate - JDateTime object containing the date
+	 * @return - String object containing the date text
 	 */
 	private static String convertDatetoString(JDateTime inputDate) {
 		return (inputDate.getMonth() + "/" + inputDate.getDay() + "/" + inputDate.getYear());

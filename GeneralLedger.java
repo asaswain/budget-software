@@ -118,7 +118,7 @@ public class GeneralLedger {
 			defaultBudget.deleteAccount(deleteAccount);
 		}
 	}
-	
+
 	/** 
 	 * This returns a list of all the accounts in the general ledger
 	 * 
@@ -187,7 +187,7 @@ public class GeneralLedger {
 			throw new IllegalArgumentException(e);
 		}
 	}
-	
+
 	/**
 	 * /**
 	 * This updates a single entry in a month
@@ -208,7 +208,7 @@ public class GeneralLedger {
 			throw new IllegalArgumentException(e);
 		}
 	}
-	
+
 	/**
 	 * Get the a single entry object for target date and target index
 	 * 
@@ -254,25 +254,46 @@ public class GeneralLedger {
 		} 
 	}
 
-	//	/**
-	//	 * This prints all entries for a given month
-	//	 * 
-	//	 * @param month - month to print entries for
-	//	 * @param year - year to print entries for
-	//	 * @param printBudget - if true then also print budget info for this month
-	//	 */
-	//	public void printMonth(int month, int year, boolean printBudget) {
-	//		try {
-	//			singleEntryData.printMonthlyLedger(month, year, printBudget);
-	//		} catch (IllegalArgumentException e) {
-	//			throw new IllegalArgumentException(e);
-	//		} 
-	//	}
+	/**
+	 * This prints all single entries in a given date range
+	 * @param - startDate first date to print entries for
+	 * @param - endDate last date to print entries for
+	 */
+	public void printDateRangeEntries(JDateTime startDate, JDateTime endDate) {
+		JDateTime tmp = startDate;
+		JDateTime cutoffDate = endDate;
+		cutoffDate.add(0,0,1);
+		do {
+			try {
+				printDaysEntries(tmp);
+				tmp.add(0, 0, 1);
+			} catch (IllegalArgumentException e) {
+				throw new IllegalArgumentException(e);
+			}
+		} while (tmp.isBefore(cutoffDate) == true);
+	}
+
+	/**
+	 * This prints all entries for a given month
+	 * 
+	 * @param month - month to print entries for
+	 * @param year - year to print entries for
+	 */
+	public void printMonth(int month, int year) {
+		System.out.println("Entries for " + month + "-" + year);
+		JDateTime startDate = new JDateTime(year,month,1);
+		int lastDayInMonth = startDate.getMonthLength();
+		JDateTime endDate = new JDateTime(year,month,lastDayInMonth);
+		try {
+			printDateRangeEntries(startDate, endDate);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(e);
+		} 
+	}
 
 	/**
 	 * Print all entries for all months in the ledger
 	 * 
-	 * @param printBudget - if true then also print budget info for this month
 	 */
 	public void printAllEntries() {
 		try {

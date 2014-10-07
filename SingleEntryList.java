@@ -32,7 +32,7 @@ public class SingleEntryList {
 	}
 	
 	/**
-	 * This adds a single entry onto the list of entries a date
+	 * This adds a single entry onto the list of entries for a date
 	 * 
 	 * @param newEntry  the new SingleEntry to add onto this day 
 	 */
@@ -202,9 +202,11 @@ public class SingleEntryList {
 	public void printDailyEntries(JDateTime date) {
 		ArrayList<SingleEntry> tmpList = datedEntryList.get(date);	
 		
-		int listSize = tmpList.size();
-		for (int i = 0; i < listSize; i++) {
-			tmpList.get(i).printEntry(); 
+		if (tmpList != null) {
+			int listSize = tmpList.size();
+			for (int i = 0; i < listSize; i++) {
+				tmpList.get(i).printEntry(); 
+			}
 		}
 	}
 	
