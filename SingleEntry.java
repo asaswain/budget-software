@@ -115,13 +115,6 @@ public class SingleEntry extends Entry implements Comparable<SingleEntry>{
 		amount = newAmount;
 	}
 
-	/** 
-	 * This prints the contents of a single entry
-	 */
-	public void printEntry() {
-		System.out.println("Date: " + date.toString("MM/DD/YYYY") + " Type: " + entryAccount.getAccountName() + " Desc: " + desc + " Amount: " + amount);
-	}
-
 	/**
 	 * This compare two SingleEntry objects by comparing their dates
 	 */

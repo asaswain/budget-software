@@ -15,9 +15,12 @@ import jodd.datetime.*;
  * @author Asa Swain
  */
 
-// 09/20/2014 MASTER TO DO LIST:
+// Note: to view SQL database go to localhost in web browser after starting Apache and mySQL in XAMPP
+//       (Sytpe will cause Apache not to start unless you prevent it from using ports 80 and 443)
+
+// 10/25/2014 MASTER TO DO LIST:
 //
-//   -. Make a separate class that summarizes and prints the monthly entries and associated budgets
+//   0. in printLedger finish printMonthlyBudget and printDefaultBudget methods
 //   1. finish working on deleteSingleEntry Method
 //   2. write a Update Single Entry Method
 //   3. write a Add Repeating Entry Method
@@ -125,7 +128,8 @@ public class GeneralLedger {
 	 * @return ArrayList<Type> accountList object
 	 */
 	public ArrayList<Account> getAccountList() {
-		return accountList;
+		ArrayList<Account> tmpList = new ArrayList<Account>(accountList);
+		return tmpList;
 	}
 
 	/**
@@ -210,109 +214,89 @@ public class GeneralLedger {
 	}
 
 	/**
-	 * Get the a single entry object for target date and target index
+	 * Get a list of dates for all the single entries in this ledger
+	 * 
+	 * @return - a ArrayList object of all the dates that have single entries in this ledger
+	 */
+	public ArrayList<JDateTime> getSingleEntryDates() {
+		ArrayList<JDateTime> dateList = new ArrayList<JDateTime>(singleEntryData.getDateList());
+		return dateList;
+	}
+
+	/**
+	 * Get the an ArrayList object of Single Entries for target date
 	 * 
 	 * @param targetDate - the date of the entry to search for
-	 * @param targetIndex - the index of the entry to search for on that date
-	 * @return - a SingleEntry object
+	 * @return - a ArrayList object of Single Entries
 	 */
-	public SingleEntry getDailyLedgerSingleEntry(JDateTime targetDate, int targetIndex) {
-		return singleEntryData.getSingleEntry(targetDate, targetIndex);
-	}
-
-	//	/**
-	//	 * Get the number of single entries in a given month of the general ledger
-	//	 * 
-	//	 * @param month - month of the ledger to search
-	//	 * @param year - year of the ledger to search
-	//	 * @return - number of single entries found in the month
-	//	 */
-	//	public int getMonthlyLedgerSingleEntryCount(int month, int year) {
-	//		return singleEntryData.getMonthlySingleEntryCount(month, year);
-	//	}
-
-	/**
-	 * Get the number of single entries in a given date of the general ledger
-	 * 
-	 * @param searchDate - date in the ledger to search
-	 * @return - number of single entries found in the date
-	 */
-	public int getDailyLedgerSingleEntryCount(JDateTime searchDate) {
-		return singleEntryData.getNumberOfEntriesInDate(searchDate);
+	public ArrayList<SingleEntry> getDailyLedgerSingleEntryList(JDateTime targetDate) {
+		return singleEntryData.getSingleEntryList(targetDate);
 	}
 
 	/**
-	 * This prints all single entries for a given date
+	 * Get a list of default budget accounts
 	 * 
-	 * @param printDate - the date to print single entries for
+	 * @return - a ArrayList object of all the accounts in the default budget
 	 */
-	public void printDaysEntries(JDateTime printDate) {
+	public ArrayList<Account> getDefaultBudgetAccounts() {
+		ArrayList<Account> accountList = new ArrayList<Account>(defaultBudget.getAccountList());
+		return accountList;
+	}
+
+	/**
+	 * Get an amount from default budget for an account
+	 * 
+	 * @param searchAcct - the account you want to get the budgeted amount for
+	 * 
+	 * @return - the amount budgeted for this account in the default budget
+	 */
+	public double getDefaultBudgetAmount(Account searchAcct) {
 		try {
-			singleEntryData.printDailyEntries(printDate);
-		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException(e);
-		} 
-	}
-
-	/**
-	 * This prints all single entries in a given date range
-	 * @param - startDate first date to print entries for
-	 * @param - endDate last date to print entries for
-	 */
-	public void printDateRangeEntries(JDateTime startDate, JDateTime endDate) {
-		JDateTime tmp = startDate;
-		JDateTime cutoffDate = endDate;
-		cutoffDate.add(0,0,1);
-		do {
-			try {
-				printDaysEntries(tmp);
-				tmp.add(0, 0, 1);
-			} catch (IllegalArgumentException e) {
-				throw new IllegalArgumentException(e);
-			}
-		} while (tmp.isBefore(cutoffDate) == true);
-	}
-
-	/**
-	 * This prints all entries for a given month
-	 * 
-	 * @param month - month to print entries for
-	 * @param year - year to print entries for
-	 */
-	public void printMonth(int month, int year) {
-		System.out.println("Entries for " + month + "-" + year);
-		JDateTime startDate = new JDateTime(year,month,1);
-		int lastDayInMonth = startDate.getMonthLength();
-		JDateTime endDate = new JDateTime(year,month,lastDayInMonth);
-		try {
-			printDateRangeEntries(startDate, endDate);
-		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException(e);
-		} 
-	}
-
-	/**
-	 * Print all entries for all months in the ledger
-	 * 
-	 */
-	public void printAllEntries() {
-		try {
-			singleEntryData.printAllEntries();
+			return defaultBudget.getBudgetAmount(searchAcct);
 		} catch (IllegalArgumentException e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
 
 	/**
-	 * Print default budget info
+	 * Get a list of monthly budget accounts
+	 * 
+	 * @param month - month to read list of budget accounts from
+	 * @param year - year of month to read list of budget accounts from
+	 * 
+	 * @return - a ArrayList object of all the accounts in the monthly budget
 	 */
-	public void printDefaultBudget() {
-		try {
-			System.out.println("Default Monthly Budget Info:");
-			defaultBudget.printBudget();
-		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException(e);
-		} 
+	public ArrayList<Account> getMonthlyBudgetAccounts(int month, int year) {
+		JDateTime monthYearId = new JDateTime(year, month, 1);
+		Budget monthlyBudget = monthlyBudgetList.get(monthYearId);
+		if (monthlyBudgetList.containsKey(monthYearId)) {
+			ArrayList<Account> accountList = new ArrayList<Account>(monthlyBudget.getAccountList());
+			return accountList;
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Get an amount from a monthly budget for an account
+	 * 
+	 * @param month - month of budget to read amount from
+	 * @param year - year of month of budget to read amount from
+	 * @param searchAcct - the account you want to get the budgeted amount for
+	 * 
+	 * @return - the amount budgeted for this account in a monthly budget
+	 */
+	public double getMonthlyBudgetAmount(int month, int year, Account searchAcct) {
+		JDateTime monthYearId = new JDateTime(year, month, 1);
+		if (monthlyBudgetList.containsKey(monthYearId)) {
+			try {
+				return monthlyBudgetList.get(monthYearId).getBudgetAmount(searchAcct);
+			} catch (IllegalArgumentException e) {
+				throw new IllegalArgumentException(e);
+			}
+		} else {
+			throw new IllegalArgumentException("There is no budget for " + month + "/" + year + ".");
+		}
 	}
 
 	/**
@@ -321,8 +305,12 @@ public class GeneralLedger {
 	 * @param newAccount - account to add to the default budget
 	 * @param newBudgetAmount - amount to budget for that account
 	 */
-	public void addDefaultBudgetAcct(Account newAccount, double newBudgetAmount){
-		defaultBudget.addAccount(newAccount, newBudgetAmount);
+	public void addDefaultBudgetAccount(Account newAccount, double newBudgetAmount){
+		try {
+			defaultBudget.addAccount(newAccount, newBudgetAmount);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(e);
+		}
 	}
 
 	/** 
@@ -330,8 +318,12 @@ public class GeneralLedger {
 	 * 
 	 * @param deleteAccount - the account to remove
 	 */
-	public void removeDefaultBudgetAcct(Account deleteAccount){
-		defaultBudget.deleteAccount(deleteAccount);
+	public void removeDefaultBudgetAccount(Account deleteAccount){
+		try {
+			defaultBudget.deleteAccount(deleteAccount);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(e);
+		}
 	}
 
 	/**
@@ -344,7 +336,11 @@ public class GeneralLedger {
 	 */
 	public void updateDefaultBudgetAmount(Account updateAccount, double newAmount) {
 		if (defaultBudget.isAccountInList(updateAccount) == true) {
-			defaultBudget.updateBudgetAmount(updateAccount, newAmount);
+			try {
+				defaultBudget.updateBudgetAmount(updateAccount, newAmount);
+			} catch (IllegalArgumentException e) {
+				throw new IllegalArgumentException(e);
+			}
 		} else {
 			throw new IllegalArgumentException("Account " + updateAccount + " isn't in default budget.");
 		}
@@ -358,7 +354,7 @@ public class GeneralLedger {
 	 * @param newAccount - account to add to the default budget
 	 * @param newBudgetAmount - amount to budget for that account
 	 */
-	public void addMonthlyBudgetAcct(int month, int year, Account newAccount, double newBudgetAmount) {
+	public void addMonthlyBudgetAccount(int month, int year, Account newAccount, double newBudgetAmount) {
 		JDateTime monthYearId = new JDateTime(year, month, 1);
 		Budget tmpBudget = new Budget();
 		if (monthlyBudgetList.containsKey(monthYearId)) {
@@ -375,7 +371,7 @@ public class GeneralLedger {
 	 * @param year - year of budget to update
 	 * @param deleteAccount - the account to remove
 	 */
-	public void removeMonthlyBudgetAcct(int month, int year, Account deleteAccount) {
+	public void removeMonthlyBudgetAccount(int month, int year, Account deleteAccount) {
 		JDateTime monthYearId = new JDateTime(year, month, 1);
 		Budget tmpList = monthlyBudgetList.get(monthYearId);
 		if (tmpList.isAccountInList(deleteAccount)) {
@@ -399,7 +395,6 @@ public class GeneralLedger {
 	public void updateMonthlyBudgetAmount(int month, int year, Account updateAccount, double newAmount) {
 		JDateTime monthYearId = new JDateTime(year, month, 1);
 		Budget tmpList = monthlyBudgetList.get(monthYearId);
-
 		if (tmpList.isAccountInList(updateAccount) == true) {
 			tmpList.updateBudgetAmount(updateAccount, newAmount);
 		} else {
@@ -650,8 +645,7 @@ public class GeneralLedger {
 			// no list required, just need a dummy list so we can count the number of iterations
 			if (commandName == "SaveMonthlyLedger") {
 				// number of statements = number of single entries in ledger so make a giant list of all the SingleEntry data from all months in the general ledger
-				ArrayList<SingleEntry> rawEntryList = new ArrayList<SingleEntry>();
-				rawEntryList = singleEntryData.getRawSingleEntryList();
+				ArrayList<SingleEntry> rawEntryList = singleEntryData.getSingleEntryList();
 				for (SingleEntry tmpEntry : rawEntryList){
 					// extract data from accountList object
 					JDateTime entryDate = tmpEntry.getDate();
@@ -810,7 +804,7 @@ public class GeneralLedger {
 					Account budgetAccount = getAccount(stringAccount);
 					String stringAmount = resultSet.getString("AMOUNT");
 					double budgetAmount = Double.parseDouble(stringAmount);
-					addMonthlyBudgetAcct(budgetMonth, budgetYear, budgetAccount, budgetAmount);
+					addMonthlyBudgetAccount(budgetMonth, budgetYear, budgetAccount, budgetAmount);
 				}
 				if (commandName == "LoadDefaultBudget") {
 					String stringAccount = resultSet.getString("ACCOUNT");
@@ -819,7 +813,7 @@ public class GeneralLedger {
 					Account budgetAccount = getAccount(stringAccount);
 					String stringAmount = resultSet.getString("AMOUNT");
 					double budgetAmount = Double.parseDouble(stringAmount);
-					addDefaultBudgetAcct(budgetAccount, budgetAmount);
+					addDefaultBudgetAccount(budgetAccount, budgetAmount);
 				}
 				if (commandName == "LoadMonthlyLedger") {
 					// ignore AUTONUM column at beginning of GENERAL_LEDGER table

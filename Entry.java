@@ -46,5 +46,4 @@ public abstract class Entry {
 	
 	abstract double getAmount();
 	abstract void setAmount(double newAmount);
-	abstract void printEntry();
 }

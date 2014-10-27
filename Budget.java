@@ -104,15 +104,6 @@ public class Budget {
 	}
 	
 	/**
-	 * This returns the number of accounts in this month's budget
-	 * 
-	 * @return number of accounts in month's budget (integer)
-	 */
-	public int nbrAccounts() {
-		return budgetAccountList.keySet().size();
-	}
-
-	/**
 	 * This returns an amount for this account (aka type), unless the account is not used in the budget
 	 * 
 	 * @param account account to get an amount for
@@ -128,19 +119,7 @@ public class Budget {
 				throw new IllegalArgumentException("Account " + account + " isn't a budgeted account. Can't get a budget amount for this account.");
 			}
 		} else {
-			throw new IllegalArgumentException("Account " + account + " isn't in this monthly budget.");
-		}
-	}
-	
-	/**
-	 * This prints out a the budgeted amount for each account in the list for this month
-	 */
-	public void printBudget() {
-		// extract data from DefaultBudget object - keySet returns a set of all the keys in the HashMap\
-		for(Account setAccount : budgetAccountList.keySet()){
-			String printAccount = setAccount.getAccountName();
-			double printAmount = getBudgetAmount(setAccount);
-			System.out.println("Account: " + printAccount + " Budgeted Amount: " + printAmount);
+			throw new IllegalArgumentException("Account " + account + " isn't in this budget.");
 		}
 	}
 }
