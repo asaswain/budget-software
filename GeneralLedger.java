@@ -18,15 +18,14 @@ import jodd.datetime.*;
 // Note: to view SQL database go to localhost in web browser after starting Apache and mySQL in XAMPP
 //       (Sytpe will cause Apache not to start unless you prevent it from using ports 80 and 443)
 
-// 10/25/2014 MASTER TO DO LIST:
+// 10/28/2014 MASTER TO DO LIST:
 //
-//   0. in printLedger finish printMonthlyBudget and printDefaultBudget methods
-//   1. finish working on deleteSingleEntry Method
-//   2. write a Update Single Entry Method
-//   3. write a Add Repeating Entry Method
-//   add a "getListOfMonths" method
-//   finish writing getTotalAmountDonatedToCharity method
-//   In SQLDatabaseConnection check for failed connection and throw error if unable to make connection
+//   1. write a Update Single Entry Method
+//   2. write a Add Repeating Entry Method
+//   3. add a "getListOfMonths" method
+//   ...
+//   98. finish writing getTotalAmountDonatedToCharity method
+//   99. in SQLDatabaseConnection check for failed connection and throw error if unable to make connection
 //   
 
 //05/09/2014 TODO: add a "getListOfMonths" method?

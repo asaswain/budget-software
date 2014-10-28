@@ -12,9 +12,7 @@ import jodd.datetime.JDateTime;
  */
 
 // TODO: See GeneralLedger to do
-//       print budget data disabled?
 //       add new move entries command which calls updateEntry with a new index for the order of the entry in the date
-//       add new print data class
 
 public class TestBudget {
 
@@ -617,7 +615,7 @@ public class TestBudget {
 			if (menuChoice.toUpperCase().equals("PA")) {
 				try {
 					boolean printBudget = true;
-					PrintLedger.printAllEntries(myGeneralLedger);
+					PrintLedger.printDateRangeEntries(myGeneralLedger);
 				} catch (IllegalArgumentException e) {
 					System.out.println(e);	
 				} 

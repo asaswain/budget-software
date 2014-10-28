@@ -38,8 +38,8 @@ public class Budget {
      * 
 	 * @param newAccount  the new account to add to the budget
 	 * @param newBudgetAmount  the new amount to add to the budget
-	 * @throws error if the account already exists in the budget
-	 * @throws error if the account type can't be budgeted  
+	 * @exception if the account already exists in the budget
+	 * @exception if the account type can't be budgeted  
 	 */
 	public void addAccount(Account newAccount, Double newBudgetAmount) {
 		if (budgetAccountList.containsKey(newAccount) == true) {
@@ -72,7 +72,7 @@ public class Budget {
 	 * 
 	 * @param account  the account to update the budgeted amount for
 	 * @param newBudgetAmount  the new budgeted amount
-	 * @throws an exception if the account isn't a budgeted account 
+	 * @exception if the account isn't a budgeted account 
 	 */
 	public void updateBudgetAmount(Account account, Double newBudgetAmount) {
 		if (account.getIsIncludedInBudget() == true) {
@@ -107,8 +107,8 @@ public class Budget {
 	 * This returns an amount for this account (aka type), unless the account is not used in the budget
 	 * 
 	 * @param account account to get an amount for
-	 * @throws exception if the account isn't in the monthly budget
-	 * @throws exception if the account isn't a budgeted account (according to Type object settings)
+	 * @exception if the account isn't in the monthly budget
+	 * @exception if the account isn't a budgeted account (according to Type object settings)
 	 * @return amount for this account
 	 */
 	public double getBudgetAmount(Account account) {
