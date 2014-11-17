@@ -17,6 +17,8 @@ import jodd.datetime.JDateTime;
 public class TestBudget {
 
 	/**
+	 * This method controls the main UI of the budget_program class
+	 * 
 	 * @param args
 	 */
 	public static void main(String[] args) {
@@ -126,22 +128,16 @@ public class TestBudget {
 				if (entryType.toUpperCase().equals("S")) {
 					
 					// enter date for entry
-					JDateTime entryDate;
-					try {
-						boolean checkForEntries = false;
-						boolean allowBlankInput = false;
-						entryDate = chooseDate(myGeneralLedger, stdInputScanner, "Enter Entry Date:", allowBlankInput, checkForEntries);
-					} catch (IllegalArgumentException e) {
-						System.out.println(e);
-						return;
-					}
+					String checkForEntries = "";
+					boolean allowBlankInput = false;
+					JDateTime entryDate = chooseDate(myGeneralLedger, stdInputScanner, "Enter Entry Date:", allowBlankInput, checkForEntries);
 					
 					// enter description
 					System.out.println("Enter Entry Desc:");
 					String inputDesc = stdInputScanner.nextLine();
 
 					// select account
-					boolean allowBlankInput = false;
+					allowBlankInput = false;
 					Account inputAcct;
 					try {
 						inputAcct = chooseAccount(myGeneralLedger, stdInputScanner, "", allowBlankInput);
@@ -169,54 +165,34 @@ public class TestBudget {
 
 				//repeating entries
 				if (entryType.toUpperCase().equals("R")) {
-					System.out.println("Repeating entries aren't functional yet");
-					/*String tmpDate;
 
 					// enter start date for entry
-					System.out.println("Enter Start Date of Repeating Entries:");
-					tmpDate = stdInputScanner.nextLine();
-
-					JDateTime startDate = formatDate(tmpDate);
-
+					String checkForEntries = "";
+					boolean allowBlankInput = true;
+					JDateTime startDate = chooseDate(myGeneralLedger, stdInputScanner, "Enter Start Date of Repeating Entries (or leave blank for all months):", allowBlankInput, checkForEntries);
+					
 					// enter end date for entry
-					System.out.println("Enter End Date of Repeating Entries:");
-					tmpDate = stdInputScanner.nextLine();
-
-					JDateTime endDate = formatDate(tmpDate);
+					JDateTime endDate = chooseDate(myGeneralLedger, stdInputScanner, "Enter End Date of Repeating Entries (or leave blank for all months):", allowBlankInput, checkForEntries);
 
 					// enter description
 					System.out.println("Enter Entry Desc:");
 					String inputDesc = stdInputScanner.nextLine();
 
 					// select account
-					if (myGeneralLedger.getAccountList().size() == 0) {
-						System.out.println("Database has no accounts to choose from. Aborting input.");
+					allowBlankInput = false;
+					Account inputAcct;
+					try {
+						inputAcct = chooseAccount(myGeneralLedger, stdInputScanner, "", allowBlankInput);
+					} catch (IllegalArgumentException e) {
+						System.out.println("Error: Database has no accounts to choose from. Aborting input.");
 						return;
-					} 
-
-					int inputNum = 0;
-					int badCategory = 0;
-					do {
-						String categoryMsg = "Select account ";
-						for (int i = 0; i < myGeneralLedger.getAccountList().size(); i++) {
-							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getAccountName() + " ";
-						}
-						System.out.println(categoryMsg);
-						inputNum = Integer.parseInt(stdInputScanner.nextLine());
-
-						if (inputNum > myGeneralLedger.getAccountList().size()) {
-							System.out.println("Invalid account number");	
-							badCategory = 1;
-						}
-					} while (badCategory == 1);
-
-					Type inputType = myGeneralLedger.getAccountList().get(inputNum);
-
+					}
+					
 					// enter amount
 					System.out.println("Enter Amount For Each Month:");
 					double inputAmt = Double.parseDouble(stdInputScanner.nextLine());
 
-					myGeneralLedger.addRepeatingEntry(startDate, endDate, inputDesc, inputType, inputAmt);*/
+					myGeneralLedger.addRepeatingEntry(startDate, endDate, inputDesc, inputAcct, inputAmt);
 				}
 
 				//installment entries
@@ -274,78 +250,91 @@ public class TestBudget {
 
 			// delete an entry from a specific month
 			if (menuChoice.toUpperCase().equals("DE")) {
+				System.out.println("Enter type of entry 'S'ingle, 'R'epeating or 'I'nstallment:");
+				String entryType = stdInputScanner.nextLine();
 
-				// do we want to prompt user to print entries for a given date range or for a month?
+				// single entries
+				if (entryType.toUpperCase().equals("S")) {
+					String checkForEntries = "S";
+					boolean allowBlankInput = false;
+					JDateTime deleteDate = chooseDate(myGeneralLedger, stdInputScanner, "Enter Date To Remove Entry From (MM/DD/YYYY):", allowBlankInput, checkForEntries);
+					System.out.println("Do you want to see all the entries for " + convertDatetoString(deleteDate) + "? (Y/N)");
+					String printDateEntries = stdInputScanner.nextLine();
 
-				//				// enter date for entry
-				//				System.out.println("Enter Date of Month To Remove Entry From (MM/DD/YYYY):");
-				//				String inputDate = stdInputScanner.nextLine();
-				//
-				//				JDateTime monthDate = formatDate(inputDate);
-				//
-				//				System.out.println("Do you want me to print all the entries? (Y/N)");
-				//				String printMonthEntries = stdInputScanner.nextLine();
-				//				if (printMonthEntries.toUpperCase().equals("Y")) {
-				//					// print monthly income/expenses without budget info
-				//					boolean printBudget = false;
-				//					myGeneralLedger.printAllEntries();
-				//				}
+					if (printDateEntries.toUpperCase().equals("Y")) {
+						PrintLedger.printSingleEntriesForDate(myGeneralLedger, deleteDate);
+					} 
 
-				//				JDateTime deleteDate = null;
-				//				int badDate;
-				//				do {
-				//					System.out.println("Enter Date To Remove Entry From (MM/DD/YYYY):");
-				//					String inputDate = stdInputScanner.nextLine();
-				//					deleteDate = formatDate(inputDate);
-				//
-				//					// check to make sure there are any entries on this date
-				//					if (myGeneralLedger.getDailyLedgerSingleEntryCount(deleteDate) > 0) {
-				//						badDate = 0;
-				//					} else {
-				//						badDate = 1;
-				//					}
-				//				} while (badDate == 1); 
-				
-				boolean checkForEntries = true;
-				boolean allowBlankInput = false;
-				JDateTime deleteDate = chooseDate(myGeneralLedger, stdInputScanner, "Enter Date To Remove Entry From (MM/DD/YYYY):", allowBlankInput, checkForEntries);
-				System.out.println("Do you want to see all the entries for " + convertDatetoString(deleteDate) + "? (Y/N)");
-				String printDateEntries = stdInputScanner.nextLine();
-
-				if (printDateEntries.toUpperCase().equals("Y")) {
-					PrintLedger.printEntriesForDate(myGeneralLedger, deleteDate);
+					System.out.println("Enter index of which entry for " + convertDatetoString(deleteDate) + " that you want to delete: (starting with 1)");
+					String inputIndex = stdInputScanner.nextLine();
+					int deleteIndex = Integer.parseInt(inputIndex);
+					
+					int entryCnt = myGeneralLedger.getSingleEntryListForDate(deleteDate).size();
+					if ((deleteIndex > 0) && (deleteIndex <= entryCnt)) {
+						try {
+							myGeneralLedger.deleteSingleEntry(deleteDate, deleteIndex-1);
+						} catch (IllegalArgumentException e) {
+							System.out.println(e);
+						}
+					} else {
+						System.out.println("Cannot delete that entry" + convertDatetoString(deleteDate) + " only has " + entryCnt + " entries in it.");
+					}
 				} 
+				
+				//repeating entries
+				if (entryType.toUpperCase().equals("R")) {
+					String checkForEntries = "R";
+					boolean allowBlankInput = false;
+					JDateTime deleteDate = chooseDate(myGeneralLedger, stdInputScanner, "Enter Month To Remove Entry From (MM/DD/YYYY):", allowBlankInput, checkForEntries);
+					System.out.println("Do you want to see all the repeating entries for this month? (Y/N)");
+					String printDateEntries = stdInputScanner.nextLine();
 
-				System.out.println("Enter index of which entry for " + convertDatetoString(deleteDate) + " that you want to delete: (starting with 1)");
-				String inputIndex = stdInputScanner.nextLine();
-				int deleteIndex = Integer.parseInt(inputIndex);
+					if (printDateEntries.toUpperCase().equals("Y")) {
+						PrintLedger.printRepeatingEntries(myGeneralLedger, deleteDate);
+					} 
 
-				try {
-					myGeneralLedger.deleteSingleEntry(deleteDate, deleteIndex-1);
-				} catch (IllegalArgumentException e) {
-					System.out.println(e);
+					System.out.println("Enter index of which entry for this month that you want to delete: (starting with 1)");
+					String inputIndex = stdInputScanner.nextLine();
+					int deleteIndex = Integer.parseInt(inputIndex);
+					
+					int entryCnt = myGeneralLedger.getRepeatingEntryListForMonth(deleteDate).size();
+					if ((deleteIndex > 0) && (deleteIndex <= entryCnt)) {
+						try {
+							myGeneralLedger.deleteRepeatingEntry(deleteDate, deleteIndex-1);
+						} catch (IllegalArgumentException e) {
+							System.out.println(e);
+						}
+					} else {
+						System.out.println("Cannot delete that entry, this month only has " + entryCnt + " repeating entries in it.");
+					}
 				}
-			} 
+				
+				//installment entries
+				if (entryType.toUpperCase().equals("I")) {
+					System.out.println("Installment entries aren't functional yet");
+				}
+			}
+				
 
 			// update an entry from a specific month
 			if (menuChoice.toUpperCase().equals("UE")) {
 				
 				// do we want to prompt user to print entries for a given date range or for a month?
-				boolean checkForEntries = true;
+				String checkForEntries = "S";
 				boolean allowBlankInput = false;
 				JDateTime updateDate = chooseDate(myGeneralLedger, stdInputScanner, "Enter Date To Update Entry On (MM/DD/YYYY):", allowBlankInput, checkForEntries);
 				System.out.println("Do you want to see all the entries for " + convertDatetoString(updateDate) + "? (Y/N)");
 				String printDateEntries = stdInputScanner.nextLine();
 
 				if (printDateEntries.toUpperCase().equals("Y")) {
-					PrintLedger.printEntriesForDate(myGeneralLedger, updateDate);
+					PrintLedger.printSingleEntriesForDate(myGeneralLedger, updateDate);
 				} 
 
 				System.out.println("Enter index of which entry for " + convertDatetoString(updateDate) + " that you want to update: (starting with 1)");
 				String inputIndex = stdInputScanner.nextLine();
 				int updateIndex = Integer.parseInt(inputIndex);
 				
-				SingleEntry tmpEntry = myGeneralLedger.getDailyLedgerSingleEntryList(updateDate).get(updateIndex-1);
+				SingleEntry tmpEntry = myGeneralLedger.getSingleEntryListForDate(updateDate).get(updateIndex-1);
 				
 				String oldDesc = tmpEntry.getDesc();
 				JDateTime oldDate = tmpEntry.getDate();
@@ -604,7 +593,6 @@ public class TestBudget {
 				int year = tempDate.getYear();
 
 				try {
-					//boolean printBudget = true;
 					PrintLedger.printMonth(myGeneralLedger, month, year);
 				} catch (IllegalArgumentException e) {
 					System.out.println(e);	
@@ -614,8 +602,11 @@ public class TestBudget {
 			// print the contents of the entire general ledger
 			if (menuChoice.toUpperCase().equals("PA")) {
 				try {
-					boolean printBudget = true;
-					PrintLedger.printDateRangeEntries(myGeneralLedger);
+					System.out.println("Single Entries");	
+					PrintLedger.printSingleEntries(myGeneralLedger);
+					System.out.println("");	
+					System.out.println("Repeating Entries:");	
+					PrintLedger.printRepeatingEntries(myGeneralLedger);
 				} catch (IllegalArgumentException e) {
 					System.out.println(e);	
 				} 
@@ -646,7 +637,7 @@ public class TestBudget {
 	}
 
 	/**
-	 * This prompts the user to choose an account number from the list of all accounts
+	 * This prompts the user to choose an account number from the list of all accounts in the general ledger
 	 * 
 	 * @param glData - general ledger object
 	 * @param inputScanner - scanner object used to process user's input
@@ -707,12 +698,12 @@ public class TestBudget {
 	 * 
 	 * @param glData - general ledger object
 	 * @param inputScanner - scanner object used to process user's input
-	 * @param prompt - string to display before entering date
+	 * @param prompt - message to display before prompting user to enter date
 	 * @param allowBlankInput - boolean that controls if we allow blank input
-	 * @param checkForEntries - check if general ledger has entries for this date
+	 * @param checkForEntries - String that controls if we make sure general ledger has 'S'ingle, 'R'epeating or 'I'nstallment entries for this date (or blank to skip validation)
 	 * @return - JDateTime object for date entered by user
 	 */
-	private static JDateTime chooseDate(GeneralLedger glData, Scanner inputScanner, String prompt, boolean allowBlankInput, boolean checkForEntries) {
+	private static JDateTime chooseDate(GeneralLedger glData, Scanner inputScanner, String prompt, boolean allowBlankInput, String checkForEntries) {
 		JDateTime newDate = null;
 
 		int badDate;
@@ -741,13 +732,33 @@ public class TestBudget {
 			}
 
 			if (badDate == 0) {
-				if (checkForEntries == true) {
-					// check to make sure there are entries on this date
-					if (glData.getDailyLedgerSingleEntryList(newDate).size() == 0) {
-						System.out.println("No entries found on this date. Enter a different date.");	
+				if (checkForEntries.toUpperCase() == "S") {
+					// check to make sure there are single entries on this date
+					ArrayList<SingleEntry> tmpList = glData.getSingleEntryListForDate(newDate);
+					if (tmpList != null) { 
+						if (tmpList.size() == 0) {
+							System.out.println("No entries found on this date. Enter a different date.");	
+							badDate = 1;
+						} 
+					} else {
+						System.out.println("No entries found on this date. Enter a different date.");
 						badDate = 1;
-					} 
-				} 
+					}
+				}
+				
+				if (checkForEntries.toUpperCase() == "R") {
+					// check to make sure there are repeating entries on this date
+					ArrayList<RepeatingEntry> tmpList = glData.getRepeatingEntryListForMonth(newDate);
+					if (tmpList != null) { 
+						if (tmpList.size() == 0) {
+							System.out.println("No repeating entries found on this month. Enter a different month.");	
+							badDate = 1;
+						} 
+					} else {
+						System.out.println("No repeating entries found on this month. Enter a different month");
+						badDate = 1;
+					}
+				}
 			}
 		} while (badDate == 1);
 

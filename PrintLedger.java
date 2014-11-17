@@ -17,11 +17,11 @@ public class PrintLedger {
 	 * @param ledgerData - the GeneralLedger object to print entries from
 	 * @param printDate - the date to print all the entries for
 	 */
-	public static void printEntriesForDate(GeneralLedger ledgerData, JDateTime printDate) {		
-		ArrayList<SingleEntry> entryList = ledgerData.getDailyLedgerSingleEntryList(printDate);
+	public static void printSingleEntriesForDate(GeneralLedger ledgerData, JDateTime printDate) {		
+		ArrayList<SingleEntry> entryList = ledgerData.getSingleEntryListForDate(printDate);
 		if (entryList != null) {
 			for (SingleEntry printEntry : entryList){
-				System.out.println("Date: " + printEntry.getDate().toString("MM/DD/YYYY") + " Type: " + printEntry.getAccount().getAccountName() + " Desc: " + printEntry.getDesc() + " Amount: " + printEntry.getAmount());
+				System.out.println("Date: " + printEntry.getDate().toString("MM/DD/YYYY") + " Desc: " + printEntry.getDesc() + " Type: " + printEntry.getAccount().getAccountName() + " Amount: " + printEntry.getAmount());
 			}
 		}
 	}
@@ -33,12 +33,12 @@ public class PrintLedger {
 	 * @param startDate - start date to print entries for
 	 * @param endDate - last date to print entries for
 	 */
-	public static void printDateRangeEntries(GeneralLedger ledgerData, JDateTime startDate, JDateTime endDate) {
+	public static void printSingleEntries(GeneralLedger ledgerData, JDateTime startDate, JDateTime endDate) {
 		JDateTime tmp = startDate;
 		JDateTime cutoffDate = endDate;
 		cutoffDate.add(0,0,1);
 		do {
-			printEntriesForDate(ledgerData, tmp);
+			printSingleEntriesForDate(ledgerData, tmp);
 			tmp.add(0, 0, 1);
 		} while (tmp.isBefore(cutoffDate) == true);
 	}
@@ -48,11 +48,40 @@ public class PrintLedger {
 	 * 
 	 * @param ledgerData - the GeneralLedger object to print entries from
 	 */
-	public static void printDateRangeEntries(GeneralLedger ledgerData) {
+	public static void printSingleEntries(GeneralLedger ledgerData) {
 		ArrayList<JDateTime> dateList = ledgerData.getSingleEntryDates();
 		if (dateList != null) {
 			for (JDateTime tmpDate : dateList){
-				printEntriesForDate(ledgerData, tmpDate);
+				printSingleEntriesForDate(ledgerData, tmpDate);
+			}
+		}
+	}
+	
+	/**
+	 * This prints all the repeating entries on a specific month
+	 * 
+	 * @param ledgerData - the GeneralLedger object to print entries from
+	 * @param printMonth - the month to print all the repeating entries for, if null then print all repeating entries
+	 */
+	public static void printRepeatingEntries(GeneralLedger ledgerData, JDateTime printMonth) {		
+		ArrayList<RepeatingEntry> entryList = ledgerData.getRepeatingEntryListForMonth(printMonth);
+		if (entryList != null) {
+			for (RepeatingEntry printEntry : entryList){
+				System.out.println("Desc: " + printEntry.getDesc() + " Type: " + printEntry.getAccount().getAccountName() + " Amount: " + printEntry.getAmount());
+			}
+		}
+	}
+	
+	/**
+	 * This prints all the repeating entries across all months
+	 * 
+	 * @param ledgerData - the GeneralLedger object to print entries from
+	 */
+	public static void printRepeatingEntries(GeneralLedger ledgerData) {		
+		ArrayList<RepeatingEntry> entryList = ledgerData.getRepeatingEntryListForMonth(null);
+		if (entryList != null) {
+			for (RepeatingEntry printEntry : entryList){
+				System.out.println("Desc: " + printEntry.getDesc() + " Type: " + printEntry.getAccount().getAccountName() + " Amount: " + printEntry.getAmount());
 			}
 		}
 	}
@@ -68,12 +97,17 @@ public class PrintLedger {
 	 */
 	public static void printMonth(GeneralLedger ledgerData, int printMonth, int printYear) {
 		// print entries for this month
-		System.out.println("Entries for " + printMonth + "-" + printYear);
+		System.out.println("Entries for " + printMonth + "/" + printYear);
 		JDateTime startDate = new JDateTime(printYear,printMonth,1);
 		int lastDayInMonth = startDate.getMonthLength();
 		JDateTime endDate = new JDateTime(printYear,printMonth,lastDayInMonth);
-		printDateRangeEntries(ledgerData, startDate, endDate);
+		printSingleEntries(ledgerData, startDate, endDate);
 
+		// print repeating entries for this month
+		System.out.println("");
+		System.out.println("Repeating Entries for " + printMonth + "/" + printYear);
+		printRepeatingEntries(ledgerData, startDate);
+		
 		// print budget for this month
 		try {
 			System.out.println("");

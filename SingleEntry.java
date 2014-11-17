@@ -17,31 +17,31 @@ public class SingleEntry extends Entry implements Comparable<SingleEntry>{
 	private Double amount;
 
 	/**
-	 * blank constructor
+	 * This is a blank constructor
 	 */
 	public SingleEntry(){
-		date = new JDateTime(); // current date and time
-		entryAccount = new Account();
-		desc = "";
-		amount = 0.00;
+		this.date = new JDateTime(); // current date and time
+		this.entryAccount = new Account();
+		this.desc = "";
+		this.amount = 0.00;
 	}
 
 	/**
 	 * This is a constructor using data for a single entry  - with the date passed in a JDateTime object
 	 * 
 	 * @param newDate - a JDateTime object with the date of the entry
-	 * @param newType - a Type object with the account the entry should be applied to
+	 * @param newAccount - an account object with the account the entry should be applied to
 	 * @param newDesc - the description of the entry
 	 * @param newAmount - the amount of the entry
 	 */
-	public SingleEntry(JDateTime newDate, Account newType, String newDesc, double newAmount) {
-		date = newDate;
-		entryAccount = newType;
-		desc = newDesc;
-		amount = newAmount;
-		// if expense type store amount as a negative number
-		if (newType.getIsAnExpense() == true) {
-			amount = amount * -1;
+	public SingleEntry(JDateTime newDate, Account newAccount, String newDesc, double newAmount) {
+		this.date = newDate;
+		this.entryAccount = newAccount;
+		this.desc = newDesc;
+		this.amount = newAmount;
+		// if this is for an expense account, then store amount as a negative number
+		if (newAccount.getIsAnExpense() == true) {
+			this.amount = this.amount * -1;
 		}
 	}
 
@@ -51,18 +51,18 @@ public class SingleEntry extends Entry implements Comparable<SingleEntry>{
 	 * @param newDay - an integer with the day of the entry date
 	 * @param newMonth - an integer with the month of the entry date
 	 * @param newYear - an integer with the year of the entry date
-	 * @param newType - a Type object with the account the entry should be applied to 
+	 * @param newAccount - an account object with the account the entry should be applied to 
 	 * @param newDesc - the description of the entry 
 	 * @param newAmount - the amount of the entry
 	 */
-	public SingleEntry(int newDay, int newMonth, int newYear, Account newType, String newDesc, double newAmount) {
-		date = new JDateTime(newYear,newMonth,newDay);
-		entryAccount = newType;
-		desc = newDesc;
-		amount = newAmount;
-		// if expense type store amount as a negative number
-		if (newType.getIsAnExpense() == true) {
-			amount = amount * -1;
+	public SingleEntry(int newDay, int newMonth, int newYear, Account newAccount, String newDesc, double newAmount) {
+		this.date = new JDateTime(newYear,newMonth,newDay);
+		this.entryAccount = newAccount;
+		this.desc = newDesc;
+		this.amount = newAmount;
+		// if this is for an expense account, then store amount as a negative number
+		if (newAccount.getIsAnExpense() == true) {
+			this.amount = this.amount * -1;
 		}
 	}
 
@@ -116,7 +116,7 @@ public class SingleEntry extends Entry implements Comparable<SingleEntry>{
 	}
 
 	/**
-	 * This compare two SingleEntry objects by comparing their dates
+	 * This compares two SingleEntry objects by comparing their dates
 	 */
 	public int compareTo(SingleEntry other) {
 		return date.compareTo(other.date);
