@@ -35,7 +35,7 @@ public class GeneralLedger {
 	// list of income and expenses
 	private EntryList entryData;
 	// TODO: implement installment and repeating entries methods
-	
+
 	// list of budgets for each month
 	private TreeMap<JDateTime,Budget> monthlyBudgetList;
 	// list of all general ledger accounts
@@ -210,7 +210,7 @@ public class GeneralLedger {
 			throw new IllegalArgumentException(e);
 		}
 	}
-	
+
 	/**
 	 * This adds a new repeating entry
 	 * 
@@ -221,14 +221,14 @@ public class GeneralLedger {
 	 * @param inputAmt - amount for repeating entry
 	 */
 	public void addRepeatingEntry(JDateTime startDate, JDateTime endDate, String inputDesc, Account inputAcct, double inputAmt) {
-				RepeatingEntry inputEntry = new RepeatingEntry(startDate, endDate, inputAcct, inputDesc, inputAmt);
-				try {
-					entryData.addRepeatingEntry(inputEntry);
-				} catch (IllegalArgumentException e) {
-					throw new IllegalArgumentException(e);
-				}
+		RepeatingEntry inputEntry = new RepeatingEntry(startDate, endDate, inputAcct, inputDesc, inputAmt);
+		try {
+			entryData.addRepeatingEntry(inputEntry);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(e);
+		}
 	}
-	
+
 	/**
 	 * This deletes a repeating entry from a month
 	 * 
@@ -243,7 +243,7 @@ public class GeneralLedger {
 			throw new IllegalArgumentException(e);
 		}
 	}
-	
+
 	/**
 	 * This updates a single entry in a month
 	 * 
@@ -267,7 +267,7 @@ public class GeneralLedger {
 		if (inputStartDate.getDay() != 1) {
 			throw new IllegalArgumentException("End Date must be at beginning of the month.");
 		}
-		
+
 		try {
 			RepeatingEntry inputEntry = new RepeatingEntry(inputStartDate, inputEndDate, inputAcct, inputDesc, inputAmt);
 			entryData.updateRepeatingEntry(targetDesc, inputEntry);
@@ -295,7 +295,7 @@ public class GeneralLedger {
 	public ArrayList<SingleEntry> getSingleEntryListForDate(JDateTime targetDate) {
 		return entryData.getSingleEntryList(targetDate);
 	}
-	
+
 	/**
 	 * Get an ArrayList object of all the Repeating Entries for the target month
 	 * 
@@ -523,7 +523,7 @@ public class GeneralLedger {
 
 			SQLTablesExist = new boolean[NBR_SQL_DATABASES];
 			for (int i = 0; i < NBR_SQL_DATABASES; i++) {
-				SQLTablesExist[i] = true;
+				SQLTablesExist[i] = false;
 			}
 		}
 
@@ -591,25 +591,31 @@ public class GeneralLedger {
 			int statementCnt = statementList.size();
 			String commandType = getSQLCommandType(commandName);
 
-			for (int i = 0; i < statementCnt; i++) {
-				Statement statement = null;
-				try {
-					if (commandType == "ReadTables") {
-						if (commandName.length() > 14 && commandName.substring(0, 14) == "verifySQLTables"){
+			if (commandType.equals("ReadTables")) {
+				if (commandName.length() > 14 && commandName.substring(0,14).equals("VerifySQLTable")){
+					try {
+						// verify that each of the SQL tables exist
+						DatabaseMetaData md = connection.getMetaData();
+						ResultSet rs = md.getTables(null, null, "%", null);
 
-							// verify that each of the SQL tables exist
-							DatabaseMetaData md = connection.getMetaData();
-							ResultSet rs = md.getTables(null, null, "%", null);
+						while (rs.next()) {
+							System.out.println(rs.getString(3));
+							if (rs.getString(3).equals("account_List"))   { SQLTablesExist[0] = true; }
+							if (rs.getString(3).equals("general_ledger")) { SQLTablesExist[1] = true; }
+							if (rs.getString(3).equals("monthly_budget")) { SQLTablesExist[2] = true; }
+							if (rs.getString(3).equals("default_budget")) { SQLTablesExist[3] = true; }
+							if (rs.getString(3).equals("repeat_entry"))   { SQLTablesExist[4] = true; }
+						}	
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			} else {
+				for (int i = 0; i < statementCnt; i++) {
+					Statement statement = null;
+					try {
 
-							while (rs.next()) {
-								if (rs.getString(3) == "account_List")   { SQLTablesExist[0] = true; }
-								if (rs.getString(3) == "general_ledger") { SQLTablesExist[1] = true; }
-								if (rs.getString(3) == "monthly_budget") { SQLTablesExist[2] = true; }
-								if (rs.getString(3) == "default_budget") { SQLTablesExist[3] = true; }
-								if (rs.getString(3) == "repeat_entry")   { SQLTablesExist[4] = true; }
-							}	
-						}
-					} else {
 						statement = connection.createStatement();
 
 						// get SQL command to execute
@@ -617,7 +623,7 @@ public class GeneralLedger {
 
 						if (command != "") {
 							//System.out.println("SQL command = " + command);
-							if (commandType == "ExecuteUpdate" ) {
+							if (commandType.equals("ExecuteUpdate")) {
 								statement.executeUpdate(command);
 							} else { 
 								ResultSet resultSet = statement.executeQuery(command);
@@ -628,10 +634,10 @@ public class GeneralLedger {
 								}
 							}
 						}
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
 				}
 			}
 		}
@@ -657,7 +663,7 @@ public class GeneralLedger {
 			String user = "root";
 			String password = "";
 			try {
-				connection = DriverManager.getConnection("jdbc:mysql://localhost:3308/javabudget", user, password);
+				connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/javabudget", user, password);
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -672,24 +678,24 @@ public class GeneralLedger {
 		private ArrayList<String> getSQLStatementList(String commandName) {
 			ArrayList<String> statementList = new ArrayList<String>();
 
-			if (commandName == "LoadAccountList") {
+			if (commandName.equals("LoadAccountList")) {
 				statementList.add("SELECT * FROM `account_list`");
 			}
-			if (commandName == "LoadSingleEntry") {
+			if (commandName.equals("LoadSingleEntry")) {
 				statementList.add("SELECT * FROM `general_ledger`");
 			}
-			if (commandName == "LoadRepeatEntry") {
+			if (commandName.equals("LoadRepeatEntry")) {
 				statementList.add("SELECT * FROM `repeat_entry`");
 			}
 
-			if (commandName == "LoadMonthlyBudgets") {
+			if (commandName.equals("LoadMonthlyBudgets")) {
 				statementList.add("SELECT * FROM `monthly_budget`");
 			}
-			if (commandName == "LoadDefaultBudget") {
+			if (commandName.equals("LoadDefaultBudget")) {
 				statementList.add("SELECT * FROM `default_budget`");
 			}
 
-			if (commandName == "EraseDatabase") {
+			if (commandName.equals("EraseDatabase")) {
 				statementList.add("TRUNCATE `account_list`");
 				statementList.add("TRUNCATE `general_ledger`");
 				statementList.add("TRUNCATE `repeat_entry`");
@@ -697,7 +703,7 @@ public class GeneralLedger {
 				statementList.add("TRUNCATE `default_budget`");
 			}
 
-			if (commandName == "SaveAccountList") {
+			if (commandName.equals("SaveAccountList")) {
 				// number of statements = number of accounts
 				for (Account tmpAccount : accountList){
 					// extract data from accountList object		
@@ -724,7 +730,7 @@ public class GeneralLedger {
 			}
 
 			// no list required, just need a dummy list so we can count the number of iterations
-			if (commandName == "SaveSingleEntries") {
+			if (commandName.equals("SaveSingleEntries")) {
 				// number of statements = number of single entries in ledger so make a giant list of all the SingleEntry data from all months in the general ledger
 				ArrayList<SingleEntry> rawEntryList = entryData.getSingleEntryList();
 				for (SingleEntry tmpEntry : rawEntryList){
@@ -745,9 +751,9 @@ public class GeneralLedger {
 					statementList.add(tmpStatement);
 				}
 			}
-			
+
 			// no list required, just need a dummy list so we can count the number of iterations
-			if (commandName == "SaveRepeatEntries") {
+			if (commandName.equals("SaveRepeatEntries")) {
 				// number of statements = number of single entries in ledger so make a giant list of all the SingleEntry data from all months in the general ledger
 				ArrayList<RepeatingEntry> rawEntryList = entryData.getRepeatingEntryList();
 				for (RepeatingEntry tmpEntry : rawEntryList){
@@ -774,7 +780,7 @@ public class GeneralLedger {
 				}
 			}
 
-			if (commandName == "SaveDefaultBudget") {
+			if (commandName.equals("SaveDefaultBudget")) {
 				// extract account list from the DefaultBudget object - keySet returns a set of all the keys in the HashMap
 				for(Account setAccount : defaultBudget.getAccountList()){
 					String tmpAccount = setAccount.getAccountName();
@@ -787,7 +793,7 @@ public class GeneralLedger {
 				}
 			}
 
-			if (commandName == "SaveMonthlyBudgets"){
+			if (commandName.equals("SaveMonthlyBudgets")){
 				// extract monthly budget dates from the monthlyData object - keySet returns a set of all the keys in the HashMap
 				for(JDateTime tmpDate : monthlyBudgetList.keySet()){
 					int tmpMonth = tmpDate.getMonth();
@@ -806,23 +812,23 @@ public class GeneralLedger {
 				}
 			}
 
-			if(commandName.length() > 14 && commandName.substring(0,14) == "CreateSQLTable"){
+			if(commandName.length() > 14 && commandName.substring(0,14).equals("CreateSQLTable")){
 				String tableNbr = commandName.substring(14, 15);
 
 				String tmpStatement = "";
-				if (tableNbr == "1") {
+				if (tableNbr.equals("0")) {
 					tmpStatement = "CREATE TABLE account_list (";
 					tmpStatement += " name VARCHAR(25) DEFAULT NULL, ";
 					tmpStatement += " description VARCHAR(100) DEFAULT NULL,";
 					tmpStatement += " is_an_expense VARCHAR(1) DEFAULT NULL,";
-					tmpStatement += " is_in_budget VARCHAR(1) DEFAULT NULL";
+					tmpStatement += " is_in_budget VARCHAR(1) DEFAULT NULL,";
 					tmpStatement += " PRIMARY KEY (name)";
 					tmpStatement += ");";
 				}
 
-				if (tableNbr == "2") {
+				if (tableNbr.equals("1")) {
 					tmpStatement = "CREATE TABLE general_ledger (";
-					tmpStatement += " autonum VARCHAR(100) NOT NULL AUTO_INCREMENT, ";
+					tmpStatement += " autonum INT(100) NOT NULL AUTO_INCREMENT,";
 					tmpStatement += " date date DEFAULT NULL, ";
 					tmpStatement += " description VARCHAR(100) DEFAULT NULL,";
 					tmpStatement += " account VARCHAR(25) DEFAULT NULL,";
@@ -831,9 +837,9 @@ public class GeneralLedger {
 					tmpStatement += ");";
 				}
 
-				if (tableNbr == "3") {
+				if (tableNbr.equals("2")) {
 					tmpStatement = "CREATE TABLE monthly_budget (";
-					tmpStatement += " autonum VARCHAR(100) NOT NULL AUTO_INCREMENT, ";
+					tmpStatement += " autonum INT(100) NOT NULL AUTO_INCREMENT, ";
 					tmpStatement += " month INT(10) NOT NULL,";
 					tmpStatement += " year INT(10) NOT NULL,";
 					tmpStatement += " account VARCHAR(25) DEFAULT NULL, ";
@@ -842,17 +848,17 @@ public class GeneralLedger {
 					tmpStatement += ");";
 				}
 
-				if (tableNbr == "4") {
+				if (tableNbr.equals("3")) {
 					tmpStatement = "CREATE TABLE default_budget (";
 					tmpStatement += " account VARCHAR(25) DEFAULT NULL, ";
 					tmpStatement += " amount float DEFAULT NULL,";
 					tmpStatement += " PRIMARY KEY (account)";
 					tmpStatement += ");";
 				}	
-				
-				if (tableNbr == "5") {
+
+				if (tableNbr.equals("4")) {
 					tmpStatement = "CREATE TABLE repeat_entry (";
-					tmpStatement += " autonum VARCHAR(100) NOT NULL AUTO_INCREMENT, ";
+					tmpStatement += " autonum INT(100) NOT NULL AUTO_INCREMENT, ";
 					tmpStatement += " description VARCHAR(100) DEFAULT NULL,";
 					tmpStatement += " startdate date DEFAULT NULL, ";
 					tmpStatement += " enddate date DEFAULT NULL, ";
@@ -861,8 +867,8 @@ public class GeneralLedger {
 					tmpStatement += " PRIMARY KEY (autonum)";
 					tmpStatement += ");";
 				}
-				
-				if (tmpStatement != "") {
+
+				if (!tmpStatement.equals("")) {
 					statementList.add(tmpStatement);	
 				}
 			}
@@ -878,17 +884,17 @@ public class GeneralLedger {
 		 */
 		private String getSQLCommandType(String commandName) {
 			String commandType = "";
-			if ((commandName == "VerifySQLTables")) {
+			if ((commandName.equals("VerifySQLTables"))) {
 				commandType = "ReadTables";
-			}
-
-			if ((commandName == "EraseDatabase") || (commandName == "SaveAccountList") 
-					|| (commandName == "SaveDefaultBudget") || (commandName == "SaveSingleEntries") || (commandName == "SaveRepeatEntries") 
-					|| (commandName == "SaveMonthlyBudgets")  || (commandName.length() > 14 && commandName.substring(0,14) == "CreateSQLTable")) {
-				commandType = "ExecuteUpdate";
 			} else {
-				// commandName == "LoadAccountList" or "LoadRepeatEntry" or "LoadMonthlyBudgets" or "LoadDefaultBudget" {
-				commandType = "ExecuteQuery";	
+				if ((commandName.equals("EraseDatabase")) || (commandName.equals("SaveAccountList") )
+						|| (commandName.equals("SaveDefaultBudget")) || (commandName.equals("SaveSingleEntries")) || (commandName.equals("SaveRepeatEntries")) 
+						|| (commandName.equals("SaveMonthlyBudgets"))  || (commandName.length() > 14 && commandName.substring(0,14).equals("CreateSQLTable"))) {
+					commandType = "ExecuteUpdate";
+				} else {
+					// commandName == "LoadAccountList" or "LoadRepeatEntry" or "LoadMonthlyBudgets" or "LoadDefaultBudget" {
+					commandType = "ExecuteQuery";	
+				}
 			}
 			return commandType;
 		}
@@ -903,7 +909,7 @@ public class GeneralLedger {
 		 */
 		private void parseSQLResults(String commandName, ResultSet resultSet) {
 			try {
-				if (commandName == "LoadAccountList") {
+				if (commandName.equals("LoadAccountList")) {
 					String accountName = resultSet.getString("NAME");		
 					accountName = accountName.replace("''", "'"); // replace single quotes with '' to make it compatible with SQL database
 					String accountDesc = resultSet.getString("DESCRIPTION");	
@@ -914,7 +920,7 @@ public class GeneralLedger {
 					boolean isInBudget = (tmpIsInBudget.equals("Y"));
 					addAccount(accountName, accountDesc, isAnExpense, isInBudget, false, 0);
 				}
-				if (commandName == "LoadMonthlyBudgets") {
+				if (commandName.equals("LoadMonthlyBudgets")) {
 					// ignore AUTONUM column at beginning of MONTHLY_BUDGET table
 					String stringMonth = resultSet.getString("MONTH");
 					int budgetMonth = Integer.parseInt(stringMonth);
@@ -928,7 +934,7 @@ public class GeneralLedger {
 					double budgetAmount = Double.parseDouble(stringAmount);
 					addMonthlyBudgetAccount(budgetMonth, budgetYear, budgetAccount, budgetAmount);
 				}
-				if (commandName == "LoadDefaultBudget") {
+				if (commandName.equals("LoadDefaultBudget")) {
 					String stringAccount = resultSet.getString("ACCOUNT");
 					stringAccount = stringAccount.replace("''", "'"); // replace single quotes with '' to make it compatible with SQL database
 					// get the Type object for this account name
@@ -937,7 +943,7 @@ public class GeneralLedger {
 					double budgetAmount = Double.parseDouble(stringAmount);
 					addDefaultBudgetAccount(budgetAccount, budgetAmount);
 				}
-				if (commandName == "LoadSingleEntry") {
+				if (commandName.equals("LoadSingleEntry")) {
 					// ignore AUTONUM column at beginning of GENERAL_LEDGER table
 					String stringDate = resultSet.getString("DATE");
 					// convert date from YYYY-MM-DD string into a JDateTime object
@@ -957,7 +963,7 @@ public class GeneralLedger {
 					if (entryAccount.getIsAnExpense()) entryAmount = entryAmount * -1;
 					addSingleEntry(entryDate, entryDesc, entryAccount, entryAmount);
 				}
-				if (commandName == "LoadRepeatEntry") {
+				if (commandName.equals("LoadRepeatEntry")) {
 					// ignore AUTONUM column at beginning of REPEAT_ENTRY table
 					String stringDate = resultSet.getString("STARTDATE");
 					// convert date from YYYY-MM-DD string into a JDateTime object

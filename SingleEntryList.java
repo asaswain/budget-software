@@ -206,7 +206,7 @@ public class SingleEntryList {
 	 * @return an ArrayList of all the dates that have entries in them
 	 */
 	public ArrayList<JDateTime> getDateList() {
-		return new ArrayList(datedEntryList.keySet());
+		return new ArrayList<JDateTime>(datedEntryList.keySet());
 	};
 	
 	/**
