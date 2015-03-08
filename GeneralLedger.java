@@ -230,24 +230,23 @@ public class GeneralLedger {
 	}
 
 	/**
-	 * This deletes a repeating entry from a month
+	 * This deletes a repeating entry from the ledger
 	 * 
-	 * @param targetDate - the date of the entry to delete
-	 * @param targetIndex - the index of the entry to delete on that date
-	 * @exception - if there is an error from the deleteSingleEntry method
+	 * @param targetDesc - the description of the repeating entry to delete
+	 * @exception - if there is an error from the deleteRepeatingEntry method
 	 */
-	public void deleteRepeatingEntry(JDateTime targetDate, int targetIndex) {
+	public void deleteRepeatingEntry(String targetDesc) {
 		try {
-			entryData.deleteRepeatingEntry(targetDate, targetIndex);
+			entryData.deleteRepeatingEntry(targetDesc);
 		} catch (IllegalArgumentException e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
 
 	/**
-	 * This updates a single entry in a month
+	 * This updates a repeating entry in a month
 	 * 
-	 * @param targetDesc - the desc of the repeating entry to update
+	 * @param targetDesc - the description of the repeating entry to update
 	 * @param inputStartDate - the new month start date
 	 * @param inputEndDate - the new month end date
 	 * @param inputDesc - the new description
@@ -476,7 +475,7 @@ public class GeneralLedger {
 	}
 
 	/**
-	 * 	Get an account object from the list of accounts by searching using the account name
+	 * Get an account object from the list of accounts by searching using the account name
 	 * @param accountName - name of account to search for
 	 * 
 	 * @return account object or null if not found

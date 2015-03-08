@@ -5,7 +5,9 @@ import java.util.*;
 import jodd.datetime.JDateTime;
 
 /**
-* The DatedList class consists of a TreeMap of days indexed by date and each day contains an ArrayList of single entries.
+* The EntryList class consists of: 
+* a TreeMap of single entries indexed by date. Each day contains an ArrayList of single entries.
+* a TreeMap of repeating entries indexed by the name of the repeating entry. 
 * 
 * @author Asa Swain
 */
@@ -100,24 +102,22 @@ public class EntryList {
 		ArrayList<SingleEntry> tmpList = singleEntryList.get(delEntry.getDate());
 		if ((tmpList != null) && (tmpList.contains(delEntry))) {
 			tmpList.remove(delEntry);
-			} else {
-				throw new IllegalArgumentException("The list of entries for this date: " + delEntry.getDate() + " doesn't have the entry you are trying to delete");
-			}
+		} else {
+			throw new IllegalArgumentException("The list of entries for this date: " + delEntry.getDate() + " doesn't have the entry you are trying to delete");
+		}
 		singleEntryList.put(delEntry.getDate(),tmpList);
 	}
 	
 	/**
 	 * This removes an entry from the list of repeating entries (making sure it's there first)
 	 *
-	 * @param targetMonth - month of repeating entry to delete
-	 * @param targetIndex - index of repeating entry to delete
+	 * @param targetDesc - the description of the repeating entry to delete
 	 * @exception IllegalArgumentException - if the list of repeating entries for this month does not at least "targetIndex" number of items in it
 	 */
-	public void deleteRepeatingEntry(JDateTime targetMonth, int targetIndex) {
-		ArrayList<RepeatingEntry> tmpList = getRepeatingEntryList(targetMonth);
-		if ((tmpList != null) && (tmpList.size() >= targetIndex)) {
-			String repeatingEntreyDesc = tmpList.get(targetIndex).getDesc();
-			repeatingEntryList.remove(repeatingEntreyDesc);
+	public void deleteRepeatingEntry(String targetDesc) {
+		ArrayList<RepeatingEntry> tmpList = getRepeatingEntryList();
+		if ((tmpList != null) && (tmpList.contains(targetDesc))) {
+			repeatingEntryList.remove(targetDesc);
 		} else {
 			throw new IllegalArgumentException("The list of entries for this month doesn't have the repeating entry you are trying to delete");
 		}
@@ -160,7 +160,7 @@ public class EntryList {
 	 * @param targetDate - date of entry to update
 	 * @param targetIndex - index of entry to update
 	 * @param newEntry - the new SingleEntry data to use in the update
-	 * @exception IllegalArgumentException - if the list of entries for this date does not at least "targetIndex" number of items in it
+	 * @exception IllegalArgumentException - if the list of entries for this date does not at least have "targetIndex" number of items in it
 	 */
 	public void updateSingleEntry(JDateTime targetDate, int targetIndex, SingleEntry newEntry) {
 		try {
@@ -184,10 +184,9 @@ public class EntryList {
 	 * @exception IllegalArgumentException - if a RepeatingEntry object with the oldDesc does not exist in the TreeMap
 	 */
 	public void updateRepeatingEntry(String oldDesc, RepeatingEntry newEntry) {
-		RepeatingEntry oldEntry = repeatingEntryList.get(oldDesc);
-		if (repeatingEntryList.containsKey(oldEntry.getDesc())) {
+		if (repeatingEntryList.containsKey(oldDesc)) {
 			try {
-				repeatingEntryList.replace(oldEntry.getDesc(), newEntry);
+				repeatingEntryList.replace(oldDesc, newEntry);
 			} catch (IllegalArgumentException e) {
 				throw new IllegalArgumentException(e);
 			}
@@ -238,6 +237,7 @@ public class EntryList {
 	 * @param searchDate  the date to get the entry from
 	 * @param loc  the index of the entry to get on that date
 	 * @return a SingleEntry object
+	 * @exception IllegalArgumentException - if the ledger doesn't have loc entries for the searchDate
 	 */
 	public SingleEntry getSingleEntry(JDateTime searchDate, int loc) {
 		ArrayList<SingleEntry> tmpList = getSingleEntryList(searchDate);	
