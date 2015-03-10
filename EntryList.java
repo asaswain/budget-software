@@ -115,8 +115,7 @@ public class EntryList {
 	 * @exception IllegalArgumentException - if the list of repeating entries for this month does not at least "targetIndex" number of items in it
 	 */
 	public void deleteRepeatingEntry(String targetDesc) {
-		ArrayList<RepeatingEntry> tmpList = getRepeatingEntryList();
-		if ((tmpList != null) && (tmpList.contains(targetDesc))) {
+		if ((repeatingEntryList != null) && (repeatingEntryList.containsKey(targetDesc))) {
 			repeatingEntryList.remove(targetDesc);
 		} else {
 			throw new IllegalArgumentException("The list of entries for this month doesn't have the repeating entry you are trying to delete");

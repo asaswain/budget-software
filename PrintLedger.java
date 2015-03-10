@@ -1,6 +1,7 @@
 package budget_program;
 
 import java.util.ArrayList;
+
 import jodd.datetime.JDateTime;
 
 /**
@@ -64,7 +65,7 @@ public class PrintLedger {
 	 * @param printMonth - the month to print all the repeating entries for, if null then print all repeating entries
 	 */
 	public static void printRepeatingEntries(GeneralLedger ledgerData, JDateTime printMonth) {		
-		ArrayList<RepeatingEntry> entryList = ledgerData.getRepeatingEntryListForMonth(printMonth);
+		ArrayList<RepeatingEntry> entryList = ledgerData.getRepeatingEntryList(printMonth);
 		if (entryList != null) {
 			for (RepeatingEntry printEntry : entryList){
 				System.out.println("Desc: " + printEntry.getDesc() + " Type: " + printEntry.getAccount().getAccountName() + " Amount: " + printEntry.getAmount());
@@ -78,10 +79,10 @@ public class PrintLedger {
 	 * @param ledgerData - the GeneralLedger object to print entries from
 	 */
 	public static void printRepeatingEntries(GeneralLedger ledgerData) {		
-		ArrayList<RepeatingEntry> entryList = ledgerData.getRepeatingEntryListForMonth(null);
+		ArrayList<RepeatingEntry> entryList = ledgerData.getRepeatingEntryList(null);
 		if (entryList != null) {
 			for (RepeatingEntry printEntry : entryList){
-				System.out.println("Desc: " + printEntry.getDesc() + " Type: " + printEntry.getAccount().getAccountName() + " Amount: " + printEntry.getAmount());
+				System.out.println("Desc: " + printEntry.getDesc() + " Type: " + printEntry.getAccount().getAccountName() + " Amount: " + printEntry.getAmount() + " Starting: " + convertDatetoString(printEntry.getStartDate()) + " Ending: " + convertDatetoString(printEntry.getEndDate()));
 			}
 		}
 	}
@@ -164,6 +165,20 @@ public class PrintLedger {
 			} 
 		} else {
 			System.out.println("No default budget found.");
+		}
+	}
+	
+	/**
+	 * This method converts a JDateTime object into a String object
+	 * 
+	 * @param inputDate - JDateTime object containing the date
+	 * @return - String object containing the date text
+	 */
+	private static String convertDatetoString(JDateTime inputDate) {
+		if (inputDate != null) {
+			return (inputDate.getMonth() + "/" + inputDate.getDay() + "/" + inputDate.getYear());
+		} else {
+			return null;
 		}
 	}
 }

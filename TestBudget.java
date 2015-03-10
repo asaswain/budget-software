@@ -18,7 +18,7 @@ public class TestBudget {
 
 	static final boolean prohibitBlankInput = false;
 	static final boolean allowBlankInput = true;
-	
+
 	/**
 	 * This method controls the main UI of the budget_program class
 	 * 
@@ -32,8 +32,11 @@ public class TestBudget {
 
 		Scanner stdInputScanner = new Scanner( System.in );		
 
-		int abort = 0;
+		boolean quit = false;
+		
 		do {
+			boolean abortCommand = false;
+			
 			System.out.println("");
 			System.out.println("Main Menu");
 			System.out.println("");
@@ -139,22 +142,24 @@ public class TestBudget {
 					String inputDesc = stdInputScanner.nextLine();
 
 					// select account
-					Account inputAcct;
+					Account inputAcct = null;
 					try {
 						inputAcct = chooseAccount(myGeneralLedger, stdInputScanner, "", prohibitBlankInput);
 					} catch (IllegalArgumentException e) {
 						System.out.println("Error: Database has no accounts to choose from. Aborting input.");
-						return;
+						abortCommand = true;
 					}
 
-					// enter amount
-					System.out.println("Enter Entry Amount:");
-					double inputAmt = inputDouble(stdInputScanner,prohibitBlankInput);
+					if (abortCommand == false) {
+						// enter amount
+						System.out.println("Enter Entry Amount:");
+						double inputAmt = inputDouble(stdInputScanner,prohibitBlankInput);
 
-					try {
-						myGeneralLedger.addSingleEntry(entryDate, inputDesc, inputAcct, inputAmt);
-					} catch (IllegalArgumentException e) {
-						System.out.println("Error: " + e);
+						try {
+							myGeneralLedger.addSingleEntry(entryDate, inputDesc, inputAcct, inputAmt);
+						} catch (IllegalArgumentException e) {
+							System.out.println("Error: " + e);
+						}
 					}
 				}
 
@@ -173,71 +178,26 @@ public class TestBudget {
 					String inputDesc = stdInputScanner.nextLine();
 
 					// select account
-					Account inputAcct;
+					Account inputAcct = null;
 					try {
 						inputAcct = chooseAccount(myGeneralLedger, stdInputScanner, "", prohibitBlankInput);
 					} catch (IllegalArgumentException e) {
 						System.out.println("Error: Database has no accounts to choose from. Aborting input.");
-						return;
+						abortCommand = true;
 					}
 
+					if (abortCommand == false) {
 					// enter amount
 					System.out.println("Enter Amount For Each Month:");
 					double inputAmt = inputDouble(stdInputScanner,prohibitBlankInput);
 
 					myGeneralLedger.addRepeatingEntry(startDate, endDate, inputDesc, inputAcct, inputAmt);
 				}
+				}
 
 				//installment entries
 				if (entryType.toUpperCase().equals("I")) {
 					System.out.println("Installment entries aren't functional yet");
-					/*String tmpDate;
-
-					// enter start date for entry
-					System.out.println("Enter Start Date of Installment Entries:");
-					tmpDate = stdInputScanner.nextLine();
-
-					JDateTime startDate = formatDate(tmpDate);
-
-					// enter end date for entry
-					System.out.println("Enter End Date of Installment Entries:");
-					tmpDate = stdInputScanner.nextLine();
-
-					JDateTime endDate = formatDate(tmpDate);
-
-					// enter description
-					System.out.println("Enter Entry Desc:");
-					String inputDesc = stdInputScanner.nextLine();
-
-					// select account
-					if (myGeneralLedger.getAccountList().size() == 0) {
-						System.out.println("Database has no accounts to choose from. Aborting input.");
-						return;
-					} 
-
-					int inputNum = 0;
-					int badCategory = 0;
-					do {
-						String categoryMsg = "Select account ";
-						for (int i = 0; i < myGeneralLedger.getAccountList().size(); i++) {
-							categoryMsg = categoryMsg + i + "-" + myGeneralLedger.getAccountList().get(i).getAccountName() + " ";
-						}
-						System.out.println(categoryMsg);
-						inputNum = Integer.parseInt(stdInputScanner.nextLine());
-
-						if (inputNum > myGeneralLedger.getAccountList().size()) {
-							System.out.println("Invalid account number");	
-							badCategory = 1;
-						}
-					} while (badCategory == 1);
-
-					Type inputType = myGeneralLedger.getAccountList().get(inputNum);
-
-					// enter amount
-					System.out.println("Enter Total Amount:");
-					double inputAmt = Double.parseDouble(stdInputScanner.nextLine());
-
-					myGeneralLedger.addInstallmentEntry(startDate, endDate, inputDesc, inputType, inputAmt);*/
 				}
 			}
 
@@ -275,22 +235,29 @@ public class TestBudget {
 				//repeating entries
 				if (entryType.toUpperCase().equals("R")) {
 					String checkForEntries = "R";
-					JDateTime deleteDate = chooseDate(myGeneralLedger, stdInputScanner, "Enter Month To Remove Entry From (MM/DD/YYYY):", prohibitBlankInput, checkForEntries);
-					System.out.println("Do you want to see all the repeating entries for this month? (Y/N)");
-					String printDateEntries = stdInputScanner.nextLine();
+					JDateTime deleteMonth = chooseDate(myGeneralLedger, stdInputScanner, "Enter Month To Display Repeating Entries For or leave blank for all months (MM/DD/YYYY):", allowBlankInput, checkForEntries);
 
-					if (printDateEntries.toUpperCase().equals("Y")) {
-						PrintLedger.printRepeatingEntries(myGeneralLedger, deleteDate);
-					} 
+					if (deleteMonth == null) {
+						System.out.println("List of all the repeating entries");
+						PrintLedger.printRepeatingEntries(myGeneralLedger);
+					} else {
+						System.out.println("List of all the repeating entries for month" + convertDatetoString(deleteMonth));
+						PrintLedger.printRepeatingEntries(myGeneralLedger,deleteMonth);
+					}
 
-					System.out.println("Enter index of which entry for this month that you want to delete: (starting with 1)");
+					System.out.println("Enter index of which entry for " + convertDatetoString(deleteMonth) + " that you want to delete: (starting with 1)");
 					int deleteIndex = inputNumericSelection(stdInputScanner,false);
-
-					int entryCnt = myGeneralLedger.getRepeatingEntryListForMonth(deleteDate).size();
+					
+					int entryCnt = myGeneralLedger.getRepeatingEntryList(deleteMonth).size();
 					if ((deleteIndex > 0) && (deleteIndex <= entryCnt)) {
 						try {
 							// get description of repeating entry we want to delete, because that is how we index the array of repeating entries
-							RepeatingEntry tmpRepeatEntry = myGeneralLedger.getRepeatingEntryListForMonth(deleteDate).get(deleteIndex);
+							RepeatingEntry tmpRepeatEntry = null;
+							if (deleteMonth != null) {
+								tmpRepeatEntry = myGeneralLedger.getRepeatingEntryList(deleteMonth).get(deleteIndex-1);
+							} else {
+								tmpRepeatEntry = myGeneralLedger.getRepeatingEntryList().get(deleteIndex-1);
+							}
 							String deleteEntryDesc = tmpRepeatEntry.getDesc();
 							myGeneralLedger.deleteRepeatingEntry(deleteEntryDesc);
 						} catch (IllegalArgumentException e) {
@@ -308,74 +275,169 @@ public class TestBudget {
 			}
 
 
-			// update an entry from a specific month
+			// update an entry
 			if (menuChoice.toUpperCase().equals("UE")) {
 
-				// do we want to prompt user to print entries for a given date range or for a month?
-				String checkForEntries = "S";
-				JDateTime updateDate = chooseDate(myGeneralLedger, stdInputScanner, "Enter Date To Update Entry On (MM/DD/YYYY):", prohibitBlankInput, checkForEntries);
-				System.out.println("Do you want to see all the entries for " + convertDatetoString(updateDate) + "? (Y/N)");
-				String printDateEntries = stdInputScanner.nextLine();
+				System.out.println("Enter type of entry 'S'ingle, 'R'epeating or 'I'nstallment:");
+				String entryType = stdInputScanner.nextLine();
 
-				if (printDateEntries.toUpperCase().equals("Y")) {
-					PrintLedger.printSingleEntriesForDate(myGeneralLedger, updateDate);
-				} 
+				// single entries
+				if (entryType.toUpperCase().equals("S")) {
+					// TODO: prompt user to print entries for a given date range or for a month instead of just for a single date
+					String checkForEntries = "S";
+					JDateTime updateDate = chooseDate(myGeneralLedger, stdInputScanner, "Enter Date To Update Entry On (MM/DD/YYYY):", prohibitBlankInput, checkForEntries);
+					System.out.println("Do you want to see all the entries for " + convertDatetoString(updateDate) + "? (Y/N)");
+					String printDateEntries = stdInputScanner.nextLine();
 
-				System.out.println("Enter index of which entry for " + convertDatetoString(updateDate) + " that you want to update: (starting with 1)");
-				int updateIndex = inputNumericSelection(stdInputScanner,false);
+					if (printDateEntries.toUpperCase().equals("Y")) {
+						PrintLedger.printSingleEntriesForDate(myGeneralLedger, updateDate);
+					} 
 
-				SingleEntry tmpEntry = myGeneralLedger.getSingleEntryListForDate(updateDate).get(updateIndex-1);
+					System.out.println("Enter index of which entry for " + convertDatetoString(updateDate) + " that you want to update: (starting with 1)");
+					int updateIndex = inputNumericSelection(stdInputScanner,false);
 
-				String oldDesc = tmpEntry.getDesc();
-				JDateTime oldDate = tmpEntry.getDate();
-				Account oldAcct = tmpEntry.getAccount();
-				double oldAmt = tmpEntry.getAmount();
+					SingleEntry tmpEntry = myGeneralLedger.getSingleEntryListForDate(updateDate).get(updateIndex-1);
 
-				String newDesc;
-				JDateTime newDate;
-				Account newAcct;
-				Double newAmt;
+					String oldDesc = tmpEntry.getDesc();
+					JDateTime oldDate = tmpEntry.getDate();
+					Account oldAcct = tmpEntry.getAccount();
+					double oldAmt = tmpEntry.getAmount();
 
-				System.out.println("Old description is " + oldDesc);
-				System.out.println("Enter new description or leave blank to keep old description:");
-				newDesc = stdInputScanner.nextLine();
-				if (newDesc == "") {
-					newDesc = oldDesc;
+					String newDesc;
+					JDateTime newDate;
+					Account newAcct;
+					Double newAmt;
+
+					System.out.println("Old description is " + oldDesc);
+					System.out.println("Enter new description or leave blank to keep old description:");
+					newDesc = stdInputScanner.nextLine();
+					if (newDesc == "") {
+						newDesc = oldDesc;
+					}
+
+					System.out.println("Old entry date is " + convertDatetoString(oldDate));
+					System.out.println("Enter new date or leave blank to keep old date:");
+					String tmpDate = stdInputScanner.nextLine();
+					if (tmpDate.equals("")) {
+						newDate = oldDate;
+					} else {
+						newDate = convertStringToDate(tmpDate);
+					}
+
+					System.out.println("Old account is " + oldAcct.getAccountName());
+					try {
+						newAcct = chooseAccount(myGeneralLedger, stdInputScanner, "Enter new account or leave blank to keep old account:", allowBlankInput);
+					} catch (IllegalArgumentException e) {
+						System.out.println("Error: Database has no accounts to choose from. Aborting input.");
+						return;
+					}
+					if (newAcct == null) {
+						newAcct = oldAcct;
+					}
+
+					System.out.println("Old amount is " + oldAmt);
+					System.out.println("Enter new amount or leave blank to keep old amount:");
+					newAmt = inputDouble(stdInputScanner,allowBlankInput);
+					if (newAmt == null) {
+						newAmt = oldAmt;
+					}
+
+					try {
+						myGeneralLedger.updateSingleEntry(updateDate, updateIndex-1, newDate, newDesc, newAcct, newAmt);
+					} catch (IllegalArgumentException e) {
+						System.out.println(e);
+					}
 				}
 
-				System.out.println("Old entry date is " + convertDatetoString(oldDate));
-				System.out.println("Enter new date or leave blank to keep old date:");
-				String tmpDate = stdInputScanner.nextLine();
-				if (tmpDate.equals("")) {
-					newDate = oldDate;
-				} else {
-					newDate = convertStringToDate(tmpDate);
+				//repeating entries
+				if (entryType.toUpperCase().equals("R")) {
+					System.out.println("Do you want to see all the repeating entries for a specific month or see all repeating entries?");
+					String checkForEntries = "R";
+					JDateTime updateMonth = chooseDate(myGeneralLedger, stdInputScanner, "Enter Date of month to see repeating entries for, or leave blank for all repeating entires (MM/DD/YYYY):", allowBlankInput, checkForEntries);
+
+					if (updateMonth == null) {
+						System.out.println("List of all the repeating entries");
+						PrintLedger.printRepeatingEntries(myGeneralLedger);
+					} else {
+						System.out.println("List of all the repeating entries for month" + convertDatetoString(updateMonth));
+						PrintLedger.printRepeatingEntries(myGeneralLedger,updateMonth);
+					}
+
+					System.out.println("Enter index of which entry for " + convertDatetoString(updateMonth) + " that you want to update: (starting with 1)");
+					int updateIndex = inputNumericSelection(stdInputScanner,false);
+
+					RepeatingEntry tmpEntry;
+					if (updateMonth != null) {
+						tmpEntry = myGeneralLedger.getRepeatingEntryList(updateMonth).get(updateIndex-1);			
+					} else {
+						tmpEntry = myGeneralLedger.getRepeatingEntryList().get(updateIndex-1);
+					}
+					
+					String oldDesc = tmpEntry.getDesc();
+					JDateTime oldStartDate = tmpEntry.getStartDate();
+					JDateTime oldEndDate = tmpEntry.getEndDate();
+					Account oldAcct = tmpEntry.getAccount();
+					double oldAmt = tmpEntry.getAmount();
+
+					String newDesc;
+					JDateTime newStartDate;
+					JDateTime newEndDate;
+					Account newAcct;
+					Double newAmt;
+
+					System.out.println("Old description is " + oldDesc);
+					System.out.println("Enter new description or leave blank to keep old description:");
+					newDesc = stdInputScanner.nextLine();
+					if (newDesc == "") {
+						newDesc = oldDesc;
+					}
+
+					System.out.println("Old start date of repeating entry is " + convertDatetoString(oldStartDate));
+					System.out.println("Enter new date or leave blank to keep old date:");
+					String tmpDate = stdInputScanner.nextLine();
+					if (tmpDate.equals("")) {
+						newStartDate = oldStartDate;
+					} else {
+						newStartDate = convertStringToDate(tmpDate);
+					}
+
+					System.out.println("Old end date of repeating entry is " + convertDatetoString(oldEndDate));
+					System.out.println("Enter new date or leave blank to keep old date:");
+					tmpDate = stdInputScanner.nextLine();
+					if (tmpDate.equals("")) {
+						newEndDate = oldEndDate;
+					} else {
+						newEndDate = convertStringToDate(tmpDate);
+					}
+
+					System.out.println("Old account is " + oldAcct.getAccountName());
+					try {
+						newAcct = chooseAccount(myGeneralLedger, stdInputScanner, "Enter new account or leave blank to keep old account:", allowBlankInput);
+					} catch (IllegalArgumentException e) {
+						System.out.println("Error: Database has no accounts to choose from. Aborting input.");
+						return;
+					}
+					if (newAcct == null) {
+						newAcct = oldAcct;
+					}
+
+					System.out.println("Old amount is " + oldAmt);
+					System.out.println("Enter new amount or leave blank to keep old amount:");
+					newAmt = inputDouble(stdInputScanner,allowBlankInput);
+					if (newAmt == null) {
+						newAmt = oldAmt;
+					}
+
+					try {
+						myGeneralLedger.updateRepeatingEntry(oldDesc, newStartDate, newEndDate, newDesc, newAcct, newAmt);
+					} catch (IllegalArgumentException e) {
+						System.out.println(e);
+					}
 				}
 
-				System.out.println("Old account is " + oldAcct.getAccountName());
-				try {
-					newAcct = chooseAccount(myGeneralLedger, stdInputScanner, "Enter new account or leave blank to keep old account:", allowBlankInput);
-				} catch (IllegalArgumentException e) {
-					System.out.println("Error: Database has no accounts to choose from. Aborting input.");
-					return;
-				}
-				if (newAcct == null) {
-					newAcct = oldAcct;
-				}
-
-				System.out.println("Old amount is " + oldAmt);
-				System.out.println("Enter new amount or leave blank to keep old amount:");
-				String tmpAmt = stdInputScanner.nextLine();
-				//
-				newAmt = inputDouble(stdInputScanner,allowBlankInput);
-				if (newAmt == null) {
-					newAmt = oldAmt;
-				}
-
-				try {
-					myGeneralLedger.updateSingleEntry(updateDate, updateIndex-1, newDate, newDesc, newAcct, newAmt);
-				} catch (IllegalArgumentException e) {
-					System.out.println(e);
+				//installment entries
+				if (entryType.toUpperCase().equals("I")) {
+					System.out.println("Installment entries aren't functional yet");
 				}
 			} 
 
@@ -516,17 +578,17 @@ public class TestBudget {
 
 			// quit program
 			if (menuChoice.toUpperCase().equals("Q")) {
-				abort = 1;
+				quit = true;
 				myGeneralLedger.saveSQLData();
 				System.out.println("Ending Program");
 			}
 
-			if (abort == 0) {
+			if (quit == false) {
 				System.out.println("<hit return to continue>");	
 				String junk = stdInputScanner.nextLine();
 			}
 
-		} while (abort == 0);
+		} while (quit == false);
 	}
 
 	/**
@@ -548,7 +610,7 @@ public class TestBudget {
 		}
 
 		int badInput;
-		int inputNum = 0;
+		Integer inputNum = 0;
 
 		do {
 			badInput = 0;
@@ -560,8 +622,8 @@ public class TestBudget {
 			System.out.println(categoryMsg);
 
 			inputNum = inputNumericSelection(inputScanner,allowBlankInput);
-					
-			if (inputNum != -1) {			
+
+			if (inputNum != null) {			
 				if (inputNum > glData.getAccountList().size()) {
 					System.out.println("Invalid account number.");	
 					badInput = 1;
@@ -569,7 +631,7 @@ public class TestBudget {
 			}
 		} while (badInput == 1);
 
-		if (inputNum != -1) {
+		if (inputNum != null) {
 			return glData.getAccountList().get(inputNum);
 		} else {
 			return null;
@@ -631,7 +693,7 @@ public class TestBudget {
 
 				if (checkForEntries.toUpperCase() == "R") {
 					// check to make sure there are repeating entries on this date
-					ArrayList<RepeatingEntry> tmpList = glData.getRepeatingEntryListForMonth(newDate);
+					ArrayList<RepeatingEntry> tmpList = glData.getRepeatingEntryList(newDate);
 					if (tmpList != null) { 
 						if (tmpList.size() == 0) {
 							System.out.println("No repeating entries found on this month. Enter a different month.");	
@@ -679,10 +741,14 @@ public class TestBudget {
 	 * @return - String object containing the date text
 	 */
 	private static String convertDatetoString(JDateTime inputDate) {
-		return (inputDate.getMonth() + "/" + inputDate.getDay() + "/" + inputDate.getYear());
+		if (inputDate != null) {
+			return (inputDate.getMonth() + "/" + inputDate.getDay() + "/" + inputDate.getYear());
+		} else {
+			return null;
+		}
 	}
 
-	
+
 	/**
 	 * This inputs a double number from the user
 	 * 
@@ -711,11 +777,11 @@ public class TestBudget {
 					badInput = 1;
 				}
 			}
-		} while (badInput == 0);
+		} while (badInput == 1);
 
 		return inputNum;
 	}
-	
+
 	/**
 	 * This inputs an Integer from the user
 	 * 
@@ -748,7 +814,7 @@ public class TestBudget {
 					badInput = 1;
 				}
 			}
-		} while (badInput == 0);
+		} while (badInput == 1);
 
 		return inputNum;
 	}

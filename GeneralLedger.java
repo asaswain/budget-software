@@ -18,13 +18,11 @@ import jodd.datetime.*;
 
 // Note: to view SQL database go to localhost in web browser after starting Apache and mySQL in XAMPP
 //       (Skype will cause Apache not to start unless you prevent it from using ports 80 and 443)
-
-// 11/17/2014 MASTER TO DO LIST:
 //
-//   1. write a Add Repeating Entry Methods
-//      a. Add code to TestBudget class to update repeating entries and test updateRepeatingEntry
-//      
+// 03/09/2015 MASTER TO DO LIST:
+//
 //   2. add a "getListOfMonths" method
+//   3. add installment entries methods
 //   ...
 //   87. work on making all get methods in GeneralLedger class immutable
 //   98. finish writing getTotalAmountDonatedToCharity method
@@ -296,12 +294,21 @@ public class GeneralLedger {
 	}
 
 	/**
+	 * Get an ArrayList object of all the Repeating Entries for all months
+	 * 
+	 * @return - an ArrayList object of all the Repeating Entries found for all months
+	 */
+	public ArrayList<RepeatingEntry> getRepeatingEntryList() {
+		return entryData.getRepeatingEntryList();
+	}
+	
+	/**
 	 * Get an ArrayList object of all the Repeating Entries for the target month
 	 * 
 	 * @param targetMonth - the month that we want to display all the repeating entries for (if null then display all repeating entries)
 	 * @return - an ArrayList object of all the Repeating Entries found for this month
 	 */
-	public ArrayList<RepeatingEntry> getRepeatingEntryListForMonth(JDateTime targetMonth) {
+	public ArrayList<RepeatingEntry> getRepeatingEntryList(JDateTime targetMonth) {
 		return entryData.getRepeatingEntryList(targetMonth);
 	}
 
@@ -599,7 +606,7 @@ public class GeneralLedger {
 
 						while (rs.next()) {
 							System.out.println(rs.getString(3));
-							if (rs.getString(3).equals("account_List"))   { SQLTablesExist[0] = true; }
+							if (rs.getString(3).equals("account_list"))   { SQLTablesExist[0] = true; }
 							if (rs.getString(3).equals("general_ledger")) { SQLTablesExist[1] = true; }
 							if (rs.getString(3).equals("monthly_budget")) { SQLTablesExist[2] = true; }
 							if (rs.getString(3).equals("default_budget")) { SQLTablesExist[3] = true; }
