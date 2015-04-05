@@ -11,11 +11,7 @@ import jodd.datetime.JDateTime;
  *
  * <afs> 07/20/2014 this class is unfinished and currently not used
  */
-public class InstallmentEntry extends Entry implements Comparable<InstallmentEntry>{
-    // start date of the income/expense - day of the month doesn't matter
-	private JDateTime startDate;
-    // end date of the income/expense - day of the month doesn't matter
-	private JDateTime endDate;
+public class InstallmentEntry extends MultipleEntry implements Comparable<InstallmentEntry>{
     // dollar amount of the income/expense
 	private BigDecimal totalAmount;
 
@@ -39,41 +35,6 @@ public class InstallmentEntry extends Entry implements Comparable<InstallmentEnt
 		entryAccount = newType;
 		desc = newDesc;
 		totalAmount = newAmount;
-	}
-
-	public JDateTime getStartDate() {
-		return startDate;
-	}
-
-	//	use overloading depending on what type of parameter is passed to set the date
-	public void setStartDate(JDateTime newDate) {
-		startDate = newDate;
-		if (startDate.isAfter(endDate)) {
-			throw new IllegalArgumentException("Start date can't be after end date");
-		}
-	}
-	public void setStartDate(int newDay, int newMonth, int newYear) {
-		startDate = new JDateTime(newYear,newMonth,newDay);
-		if (startDate.isAfter(endDate)) {
-			throw new IllegalArgumentException("Start date can't be after end date");
-		}
-	}
-
-	public JDateTime getEndDate() {
-		return endDate;
-	}
-//	<afs> use overloading depending on what type of parameter is passed to set the date
-	public void setEndDate(JDateTime newDate) {
-		endDate = newDate;
-		if (endDate.isBefore(startDate)) {
-			throw new IllegalArgumentException("End date can't be before start date");
-		}
-	}
-	public void setEndDate(int newDay, int newMonth, int newYear) {
-		endDate = new JDateTime(newYear,newMonth,newDay);
-		if (endDate.isBefore(startDate)) {
-			throw new IllegalArgumentException("End date can't be before start date");
-		}
 	}
 
 	public BigDecimal getAmount() {

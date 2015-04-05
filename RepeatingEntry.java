@@ -9,11 +9,7 @@ import jodd.datetime.JDateTime;
  * 
  * @author Asa Swain
  */
-public class RepeatingEntry extends Entry implements Comparable<RepeatingEntry>{
-	// start date of the income/expense - day of the month doesn't matter
-	private JDateTime startDate;
-	// end date of the income/expense - day of the month doesn't matter
-	private JDateTime endDate;
+public class RepeatingEntry extends MultipleEntry implements Comparable<RepeatingEntry>{
 	// dollar amount of the income/expense
 	private BigDecimal monthlyAmount;
 
@@ -75,68 +71,6 @@ public class RepeatingEntry extends Entry implements Comparable<RepeatingEntry>{
 		if (entryAccount.getIsAnExpense() == true) {
 			this.monthlyAmount = this.monthlyAmount.multiply(NEGATIVE);
 		}
-	}
-
-	/**
-	 * This gets the start date for this entry
-	 * 
-	 * @return JDateTime object with the start date 
-	 */
-	public JDateTime getStartDate() {
-		return startDate;
-	}
-	
-	// use overloading depending on what type of parameter is passed to set the start date
-	
-	/**
-	 * This sets the start date for this entry using a JDateTime object
-	 * 
-	 * @param newDate - the new start date for this entry
-	 */
-	public void setStartDate(JDateTime newDate) {
-		startDate = newDate;
-	}
-	
-	/**
-	 * This sets the start date for this entry using integers
-	 * 
-	 * @param newDay - an integer with the day of the start date
-	 * @param newMonth - an integer with the month of the start date
-	 * @param newYear - an integer with the year of the start date
-	 */
-	public void setStartDate(int newDay, int newMonth, int newYear) {
-		startDate = new JDateTime(newYear,newMonth,newDay);
-	}
-	
-	/**
-	 * This gets the end date for this entry
-	 * 
-	 * @return JDateTime object with the end date 
-	 */
-	public JDateTime getEndDate() {
-		return endDate;
-	}
-	
-	// use overloading depending on what type of parameter is passed to set the end date
-	
-	/**
-	 * This sets the end date for this entry using a JDateTime object
-	 * 
-	 * @param newDate - the new end date for this entry
-	 */
-	public void setEndDate(JDateTime newDate) {
-		endDate = newDate;
-	}
-	
-	/**
-	 * This sets the end date for this entry using integers
-	 * 
-	 * @param newDay - an integer with the day of the end date
-	 * @param newMonth - an integer with the month of the end date
-	 * @param newYear - an integer with the year of the end date
-	 */
-	public void setEndDate(int newDay, int newMonth, int newYear) {
-		endDate = new JDateTime(newYear,newMonth,newDay);
 	}
 	
 	/**
