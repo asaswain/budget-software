@@ -1,6 +1,7 @@
 package budget_program;
 
 import java.util.*;
+import java.math.BigDecimal;
 
 /**
  * This class stores a Budget which consists of a hashmap containing a list of accounts and the budgeted amounts for each account
@@ -12,13 +13,13 @@ import java.util.*;
 public class Budget {
 
 	// a hashmap of how much money was budgeted for each account (aka type)
-	private HashMap<Account,Double> budgetAccountList;
+	private HashMap<Account,BigDecimal> budgetAccountList;
 
 	/**
 	 * blank constructor
 	 */
 	public Budget() {
-		budgetAccountList = new HashMap<Account,Double>();
+		budgetAccountList = new HashMap<Account,BigDecimal>();
 	}
 
 	/**
@@ -27,7 +28,7 @@ public class Budget {
 	 * @param originalBudget original budget to copy from when creating new BudgetAmtList object
 	 */
 	public Budget(Budget originalBudget) {
-		budgetAccountList = new HashMap<Account,Double>();
+		budgetAccountList = new HashMap<Account,BigDecimal>();
 		this.budgetAccountList = originalBudget.budgetAccountList;
 	}
 
@@ -35,13 +36,13 @@ public class Budget {
 	 * This adds a new account and an associated budgeted amount the budget list
 	 * (first check to make sure the account hasn't already been added, and make sure
 	 * user isn't trying to set a budget amount for an account type that can't be budgeted)
-     * 
+	 * 
 	 * @param newAccount  the new account to add to the budget
 	 * @param newBudgetAmount  the new amount to add to the budget
 	 * @exception if the account already exists in the budget
 	 * @exception if the account type can't be budgeted  
 	 */
-	public void addAccount(Account newAccount, Double newBudgetAmount) {
+	public void addAccount(Account newAccount, BigDecimal newBudgetAmount) {
 		if (budgetAccountList.containsKey(newAccount) == true) {
 			throw new IllegalArgumentException("Account " + newAccount.getAccountName() + " already exists in the budget for this month.");	
 		} else {
@@ -49,8 +50,8 @@ public class Budget {
 				budgetAccountList.put(newAccount,newBudgetAmount);
 			} else {
 				// accounts outside the budget have no amount, so load a placeholder zero value
-				budgetAccountList.put(newAccount,(double)0);
-				if (newBudgetAmount != 0) {
+				budgetAccountList.put(newAccount,BigDecimal.ZERO);
+				if (newBudgetAmount.compareTo(BigDecimal.ZERO) != 0) {
 					throw new IllegalArgumentException("Account " + newAccount.getAccountName() + " isn't a budgeted account. Can't set a budget amount for this account.");
 				}
 			}
@@ -65,7 +66,7 @@ public class Budget {
 	public void deleteAccount(Account deleteAccount) {
 		budgetAccountList.remove(deleteAccount);
 	}
-	
+
 
 	/**
 	 * This updates the amount for an account in the budget
@@ -74,16 +75,16 @@ public class Budget {
 	 * @param newBudgetAmount  the new budgeted amount
 	 * @exception if the account isn't a budgeted account 
 	 */
-	public void updateBudgetAmount(Account account, Double newBudgetAmount) {
+	public void updateBudgetAmount(Account account, BigDecimal newBudgetAmount) {
 		if (account.getIsIncludedInBudget() == true) {
 			budgetAccountList.put(account,newBudgetAmount);
 		} else {
-			if (newBudgetAmount != 0) {
+			if (newBudgetAmount.compareTo(BigDecimal.ZERO) != 0) {
 				throw new IllegalArgumentException("Account " + account + " isn't a budgeted account. Can't set a budget amount for this account.");
 			}
 		}
 	}
-	
+
 	/** 
 	 * This checks if an account is in this budget list of accounts
 	 * 
@@ -93,7 +94,7 @@ public class Budget {
 	public boolean isAccountInList(Account inputAccount) {
 		return budgetAccountList.containsKey(inputAccount);
 	}
-	
+
 	/**
 	 * This returns a set of all the accounts in this month's budget
 	 * 
@@ -102,7 +103,7 @@ public class Budget {
 	public Set<Account> getAccountList() {
 		return budgetAccountList.keySet();
 	}
-	
+
 	/**
 	 * This returns an amount for this account (aka type), unless the account is not used in the budget
 	 * 
@@ -111,7 +112,7 @@ public class Budget {
 	 * @exception if the account isn't a budgeted account (according to Type object settings)
 	 * @return amount for this account
 	 */
-	public double getBudgetAmount(Account account) {
+	public BigDecimal getBudgetAmount(Account account) {
 		if (budgetAccountList.containsKey(account)) {
 			if (account.getIsIncludedInBudget() == true) {
 				return budgetAccountList.get(account);

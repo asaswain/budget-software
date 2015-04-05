@@ -1,6 +1,7 @@
 package budget_program;
 
 //import java.util.*;
+import java.math.BigDecimal;
 import jodd.datetime.*;
 
 /**
@@ -14,8 +15,10 @@ public class SingleEntry extends Entry implements Comparable<SingleEntry>{
 	// date of the income/expense
 	private JDateTime date;
 	// dollar amount of the income/expense
-	private Double amount;
+	private BigDecimal amount;
 
+	private final BigDecimal NEGATIVE = new BigDecimal("-1");
+	
 	/**
 	 * This is a blank constructor
 	 */
@@ -23,7 +26,8 @@ public class SingleEntry extends Entry implements Comparable<SingleEntry>{
 		this.date = new JDateTime(); // current date and time
 		this.entryAccount = new Account();
 		this.desc = "";
-		this.amount = 0.00;
+		this.amount = new BigDecimal("0");
+		this.amount = this.amount.setScale(2, BigDecimal.ROUND_CEILING);
 	}
 
 	/**
@@ -32,16 +36,16 @@ public class SingleEntry extends Entry implements Comparable<SingleEntry>{
 	 * @param newDate - a JDateTime object with the date of the entry
 	 * @param newAccount - an account object with the account the entry should be applied to
 	 * @param newDesc - the description of the entry
-	 * @param newAmount - the amount of the entry
+	 * @param newAmount - the BigDecimal amount of the entry
 	 */
-	public SingleEntry(JDateTime newDate, Account newAccount, String newDesc, double newAmount) {
+	public SingleEntry(JDateTime newDate, Account newAccount, String newDesc, BigDecimal newAmount) {
 		this.date = newDate;
 		this.entryAccount = newAccount;
 		this.desc = newDesc;
 		this.amount = newAmount;
 		// if this is for an expense account, then store amount as a negative number
 		if (newAccount.getIsAnExpense() == true) {
-			this.amount = this.amount * -1;
+			this.amount = this.amount.multiply(NEGATIVE);
 		}
 	}
 
@@ -53,16 +57,16 @@ public class SingleEntry extends Entry implements Comparable<SingleEntry>{
 	 * @param newYear - an integer with the year of the entry date
 	 * @param newAccount - an account object with the account the entry should be applied to 
 	 * @param newDesc - the description of the entry 
-	 * @param newAmount - the amount of the entry
+	 * @param newAmount - the BigDecimal amount of the entry
 	 */
-	public SingleEntry(int newDay, int newMonth, int newYear, Account newAccount, String newDesc, double newAmount) {
+	public SingleEntry(int newDay, int newMonth, int newYear, Account newAccount, String newDesc, BigDecimal newAmount) {
 		this.date = new JDateTime(newYear,newMonth,newDay);
 		this.entryAccount = newAccount;
 		this.desc = newDesc;
 		this.amount = newAmount;
 		// if this is for an expense account, then store amount as a negative number
-		if (newAccount.getIsAnExpense() == true) {
-			this.amount = this.amount * -1;
+		if (newAccount.getIsAnExpense() == true) { 
+			this.amount = this.amount.multiply(NEGATIVE);
 		}
 	}
 
@@ -100,18 +104,18 @@ public class SingleEntry extends Entry implements Comparable<SingleEntry>{
 	/**
 	 * This gets the amount of the entry (either expense or income depending on the Account)
 	 * 
-	 * @return the amount of the entry as a double
+	 * @return the amount of the entry as a BigDecimal
 	 */
-	public double getAmount() {
+	public BigDecimal getAmount() {
 		return amount;
 	}
 
 	/**
 	 * This sets the amount of the entry (either expense or income depending on the Account)
 	 * 
-	 * @param the amount of the entry as a double
+	 * @param the amount of the entry as a BigDecimal
 	 */
-	public void setAmount(double newAmount) {
+	public void setAmount(BigDecimal newAmount) {
 		amount = newAmount;
 	}
 

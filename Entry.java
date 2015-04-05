@@ -1,5 +1,7 @@
 package budget_program;
 
+import java.math.BigDecimal;
+
 /**
  * This abstract class is the template for classes that store income and expenses in the general ledger 
  * 
@@ -44,6 +46,6 @@ public abstract class Entry {
 		desc = newDesc;
 	}
 	
-	abstract double getAmount();
-	abstract void setAmount(double newAmount);
+	abstract BigDecimal getAmount();
+	abstract void setAmount(BigDecimal newAmount);
 }

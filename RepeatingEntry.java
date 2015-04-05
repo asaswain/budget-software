@@ -1,5 +1,6 @@
 package budget_program;
 
+import java.math.BigDecimal;
 import jodd.datetime.JDateTime;
 
 /**
@@ -14,8 +15,10 @@ public class RepeatingEntry extends Entry implements Comparable<RepeatingEntry>{
 	// end date of the income/expense - day of the month doesn't matter
 	private JDateTime endDate;
 	// dollar amount of the income/expense
-	private Double monthlyAmount;
+	private BigDecimal monthlyAmount;
 
+	private final BigDecimal NEGATIVE = new BigDecimal("-1");
+	
 	/**
 	 * This is a blank constructor
 	 */
@@ -24,7 +27,8 @@ public class RepeatingEntry extends Entry implements Comparable<RepeatingEntry>{
 		endDate = new JDateTime(); // current date and time
 		entryAccount = new Account();
 		desc = "";
-		monthlyAmount = 0.00;
+		monthlyAmount = new BigDecimal("0");
+		monthlyAmount = monthlyAmount.setScale(2, BigDecimal.ROUND_CEILING);
 	}
 
 	/**
@@ -40,16 +44,16 @@ public class RepeatingEntry extends Entry implements Comparable<RepeatingEntry>{
 	 * @param newDesc - the description of the entry
 	 * @param newAmount - the amount of the entry for each month
 	 */
-	public RepeatingEntry(int startDay, int startMonth, int startYear, int endDay, int endMonth, int endYear, Account newAccount, String newDesc, double newAmount) {
+	public RepeatingEntry(int startDay, int startMonth, int startYear, int endDay, int endMonth, int endYear, Account newAccount, String newDesc, BigDecimal newAmount) {
 		this.startDate = new JDateTime(startYear,startMonth,startDay);
 		this.endDate = new JDateTime(endYear,endMonth,endDay);
 		this.entryAccount = newAccount;
 		this.desc = newDesc;
 		this.monthlyAmount = newAmount;
 		// if this is for an expense account, then store amount as a negative number
-		if (entryAccount.getIsAnExpense() == true) {
-			this.monthlyAmount = this.monthlyAmount * -1;
-		}
+		if (entryAccount.getIsAnExpense() == true) { 			
+			this.monthlyAmount = this.monthlyAmount.multiply(NEGATIVE);
+		}		
 	}
 	
 	/**
@@ -61,7 +65,7 @@ public class RepeatingEntry extends Entry implements Comparable<RepeatingEntry>{
 	 * @param newDesc - the description of the entry
 	 * @param newAmount - the amount of the entry for each month
 	 */
-	public RepeatingEntry(JDateTime startDate, JDateTime endDate, Account newAccount, String newDesc, double newAmount) {
+	public RepeatingEntry(JDateTime startDate, JDateTime endDate, Account newAccount, String newDesc, BigDecimal newAmount) {
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.entryAccount = newAccount;
@@ -69,7 +73,7 @@ public class RepeatingEntry extends Entry implements Comparable<RepeatingEntry>{
 		this.monthlyAmount = newAmount;
 		// if this is for an expense account, then store amount as a negative number
 		if (entryAccount.getIsAnExpense() == true) {
-			this.monthlyAmount = this.monthlyAmount * -1;
+			this.monthlyAmount = this.monthlyAmount.multiply(NEGATIVE);
 		}
 	}
 
@@ -138,18 +142,18 @@ public class RepeatingEntry extends Entry implements Comparable<RepeatingEntry>{
 	/**
 	 * This gets the amount of the entry (either expense or income depending on the Account)
 	 * 
-	 * @return the amount of the entry as a double
+	 * @return the amount of the entry as a BigDecimal
 	 */
-	public double getAmount() {
+	public BigDecimal getAmount() {
 		return monthlyAmount;
 	}
 	
 	/**
 	 * This sets the amount of the entry (either expense or income depending on the Account)
 	 * 
-	 * @param the amount of the entry as a double
+	 * @param the amount of the entry as a BigDecimal
 	 */
-	public void setAmount(double newAmount) {
+	public void setAmount(BigDecimal newAmount) {
 		monthlyAmount = newAmount;
 	}
 	

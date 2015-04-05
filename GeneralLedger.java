@@ -1,5 +1,6 @@
 package budget_program;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.sql.*;
 
@@ -45,6 +46,8 @@ public class GeneralLedger {
 
 	private SQLDatabaseConnection mySQLDatabase;
 
+	private final BigDecimal NEGATIVE = new BigDecimal("-1");
+	
 	/**
 	 * This is a blank constructor
 	 */
@@ -89,7 +92,7 @@ public class GeneralLedger {
 	 * @param defaultBudgetAmount - If this account should be included in the Default Budget, this is the amount
 	 * 								allocated for this amount
 	 */
-	public void addAccount(String inputName, String inputDesc, boolean isAnExpense, boolean isIncludedInBudget, boolean isInDefaultAcctList, double defaultBudgetAmount) {
+	public void addAccount(String inputName, String inputDesc, boolean isAnExpense, boolean isIncludedInBudget, boolean isInDefaultAcctList, BigDecimal defaultBudgetAmount) {
 		// TODO: make sure no other account in list has the same name, names should be unique
 		Account inputAccount = new Account(inputName, inputDesc, isAnExpense, isIncludedInBudget);
 		if (accountList.contains(inputAccount) == false) {
@@ -163,9 +166,9 @@ public class GeneralLedger {
 	 * @param inputDate - date for single entry
 	 * @param inputDesc - description of single entry
 	 * @param inputAcct - account number for single entry
-	 * @param inputAmt - amount for single entry
+	 * @param inputAmt - BigDecimal amount for single entry
 	 */
-	public void addSingleEntry(JDateTime inputDate, String inputDesc, Account inputAcct, double inputAmt) {
+	public void addSingleEntry(JDateTime inputDate, String inputDesc, Account inputAcct, BigDecimal inputAmt) {
 		SingleEntry inputEntry = new SingleEntry(inputDate, inputAcct, inputDesc, inputAmt);
 		try {
 			entryData.addSingleEntry(inputEntry);
@@ -200,7 +203,7 @@ public class GeneralLedger {
 	 * @param inputAmt - the new amount
 	 * @exception - if there is an error from the updateEntry method
 	 */
-	public void updateSingleEntry(JDateTime targetDate, int targetIndex, JDateTime inputDate, String inputDesc, Account inputAcct, double inputAmt) {
+	public void updateSingleEntry(JDateTime targetDate, int targetIndex, JDateTime inputDate, String inputDesc, Account inputAcct, BigDecimal inputAmt) {
 		try {
 			SingleEntry inputEntry = new SingleEntry(inputDate, inputAcct, inputDesc, inputAmt);
 			entryData.updateSingleEntry(targetDate, targetIndex, inputEntry);
@@ -216,9 +219,9 @@ public class GeneralLedger {
 	 * @param endDate - month to end repeating entry on
 	 * @param inputDesc - description of repeating entry
 	 * @param inputAcct - account number for repeating entry
-	 * @param inputAmt - amount for repeating entry
+	 * @param inputAmt - BigDecimal amount for repeating entry
 	 */
-	public void addRepeatingEntry(JDateTime startDate, JDateTime endDate, String inputDesc, Account inputAcct, double inputAmt) {
+	public void addRepeatingEntry(JDateTime startDate, JDateTime endDate, String inputDesc, Account inputAcct, BigDecimal inputAmt) {
 		RepeatingEntry inputEntry = new RepeatingEntry(startDate, endDate, inputAcct, inputDesc, inputAmt);
 		try {
 			entryData.addRepeatingEntry(inputEntry);
@@ -256,7 +259,7 @@ public class GeneralLedger {
 	 * @exception - if the inputEndDate isn't at the beginning of the month
 	 * @exception - if there is an error from the updateEntry method
 	 */
-	public void updateRepeatingEntry(String targetDesc, JDateTime inputStartDate, JDateTime inputEndDate, String inputDesc, Account inputAcct, double inputAmt) {
+	public void updateRepeatingEntry(String targetDesc, JDateTime inputStartDate, JDateTime inputEndDate, String inputDesc, Account inputAcct, BigDecimal inputAmt) {
 
 		if (inputStartDate.getDay() != 1) {
 			throw new IllegalArgumentException("Start Date must be at beginning of the month.");
@@ -329,7 +332,7 @@ public class GeneralLedger {
 	 * 
 	 * @return - the amount budgeted for this account in the default budget
 	 */
-	public double getDefaultBudgetAmount(Account searchAcct) {
+	public BigDecimal getDefaultBudgetAmount(Account searchAcct) {
 		try {
 			return defaultBudget.getBudgetAmount(searchAcct);
 		} catch (IllegalArgumentException e) {
@@ -365,7 +368,7 @@ public class GeneralLedger {
 	 * 
 	 * @return - the amount budgeted for this account in a monthly budget
 	 */
-	public double getMonthlyBudgetAmount(int month, int year, Account searchAcct) {
+	public BigDecimal getMonthlyBudgetAmount(int month, int year, Account searchAcct) {
 		JDateTime monthYearId = new JDateTime(year, month, 1);
 		if (monthlyBudgetList.containsKey(monthYearId)) {
 			try {
@@ -384,7 +387,7 @@ public class GeneralLedger {
 	 * @param newAccount - account to add to the default budget
 	 * @param newBudgetAmount - amount to budget for that account
 	 */
-	public void addDefaultBudgetAccount(Account newAccount, double newBudgetAmount){
+	public void addDefaultBudgetAccount(Account newAccount, BigDecimal newBudgetAmount){
 		try {
 			defaultBudget.addAccount(newAccount, newBudgetAmount);
 		} catch (IllegalArgumentException e) {
@@ -413,7 +416,7 @@ public class GeneralLedger {
 	 * 
 	 * @exception IllegalArgumentException if the account updateAccount is not in the default budget
 	 */
-	public void updateDefaultBudgetAmount(Account updateAccount, double newAmount) {
+	public void updateDefaultBudgetAmount(Account updateAccount, BigDecimal newAmount) {
 		if (defaultBudget.isAccountInList(updateAccount) == true) {
 			try {
 				defaultBudget.updateBudgetAmount(updateAccount, newAmount);
@@ -433,7 +436,7 @@ public class GeneralLedger {
 	 * @param newAccount - account to add to the default budget
 	 * @param newBudgetAmount - amount to budget for that account
 	 */
-	public void addMonthlyBudgetAccount(int month, int year, Account newAccount, double newBudgetAmount) {
+	public void addMonthlyBudgetAccount(int month, int year, Account newAccount, BigDecimal newBudgetAmount) {
 		JDateTime monthYearId = new JDateTime(year, month, 1);
 		Budget tmpBudget = new Budget();
 		if (monthlyBudgetList.containsKey(monthYearId)) {
@@ -471,7 +474,7 @@ public class GeneralLedger {
 	 * 
 	 * @exception IllegalArgumentException if the account updateAccount is not in the default budget
 	 */
-	public void updateMonthlyBudgetAmount(int month, int year, Account updateAccount, double newAmount) {
+	public void updateMonthlyBudgetAmount(int month, int year, Account updateAccount, BigDecimal newAmount) {
 		JDateTime monthYearId = new JDateTime(year, month, 1);
 		Budget tmpList = monthlyBudgetList.get(monthYearId);
 		if (tmpList.isAccountInList(updateAccount) == true) {
@@ -499,7 +502,7 @@ public class GeneralLedger {
 	}
 
 	// TODO: finish writing getTotalAmountDonatedToCharity method
-	//public double getTotalAmountDonatedToCharity(JDateTime startDate, JDateTime endDate) {
+	//public BigDecimal getTotalAmountDonatedToCharity(JDateTime startDate, JDateTime endDate) {
 	//	...
 	//}
 
@@ -750,7 +753,7 @@ public class GeneralLedger {
 					tmpDesc = tmpDesc.replace("'", "''"); // replace single quotes with '' to make it compatible with SQL database
 					String tmpAccount = tmpEntry.getAccount().getAccountName();
 					tmpAccount = tmpAccount.replace("'", "''"); // replace single quotes with '' to make it compatible with SQL database
-					Double tmpAmount = tmpEntry.getAmount();
+					BigDecimal tmpAmount = tmpEntry.getAmount();
 					// intentionally ignore AUTONUM column which auto-generates an ID for this row
 					String tmpStatement = "INSERT INTO general_ledger (DATE, DESCRIPTION, ACCOUNT, AMOUNT) ";
 					tmpStatement += "VALUES ('"+tmpDate+"', '"+tmpDesc+"', '"+tmpAccount+"', '"+tmpAmount+"')";
@@ -778,7 +781,7 @@ public class GeneralLedger {
 					tmpDesc = tmpDesc.replace("'", "''"); // replace single quotes with '' to make it compatible with SQL database
 					String tmpAccount = tmpEntry.getAccount().getAccountName();
 					tmpAccount = tmpAccount.replace("'", "''"); // replace single quotes with '' to make it compatible with SQL database
-					Double tmpAmount = tmpEntry.getAmount();
+					BigDecimal tmpAmount = tmpEntry.getAmount();
 					// intentionally ignore AUTONUM column which auto-generates an ID for this row
 					String tmpStatement = "INSERT INTO repeat_entry (STARTDATE, ENDDATE, DESCRIPTION, ACCOUNT, AMOUNT) ";
 					tmpStatement += "VALUES ('"+tmpStartDate+"', '"+tmpEndDate+"', '"+tmpDesc+"', '"+tmpAccount+"', '"+tmpAmount+"')";
@@ -791,7 +794,7 @@ public class GeneralLedger {
 				for(Account setAccount : defaultBudget.getAccountList()){
 					String tmpAccount = setAccount.getAccountName();
 					tmpAccount = tmpAccount.replace("'", "''"); // replace single quotes with '' to make it compatible with SQL database
-					double tmpAmount = defaultBudget.getBudgetAmount(setAccount);
+					BigDecimal tmpAmount = defaultBudget.getBudgetAmount(setAccount);
 
 					String tmpStatement = "INSERT INTO default_budget (ACCOUNT, AMOUNT) ";
 					tmpStatement += "VALUES ('"+tmpAccount+"', '"+tmpAmount+"')";
@@ -809,7 +812,7 @@ public class GeneralLedger {
 					for (Account setAccount : tmpBudget.getAccountList()){
 						String tmpAccount = setAccount.getAccountName();
 						tmpAccount = tmpAccount.replace("'", "''"); // replace single quotes with '' to make it compatible with SQL database
-						double tmpAmount = tmpBudget.getBudgetAmount(setAccount);
+						BigDecimal tmpAmount = tmpBudget.getBudgetAmount(setAccount);
 						// intentionally ignore AUTONUM column which auto-generates an ID for this row
 						String tmpStatement = "INSERT INTO monthly_budget (MONTH, YEAR, ACCOUNT, AMOUNT) ";
 						tmpStatement += "VALUES ('"+tmpMonth+"','"+tmpYear+"','"+tmpAccount+"', '"+tmpAmount+"')";
@@ -924,7 +927,7 @@ public class GeneralLedger {
 					boolean isAnExpense = (tmpIsAnExpense.equals("Y"));
 					String tmpIsInBudget  = resultSet.getString("IS_IN_BUDGET");	
 					boolean isInBudget = (tmpIsInBudget.equals("Y"));
-					addAccount(accountName, accountDesc, isAnExpense, isInBudget, false, 0);
+					addAccount(accountName, accountDesc, isAnExpense, isInBudget, false, BigDecimal.ZERO);
 				}
 				if (commandName.equals("LoadMonthlyBudgets")) {
 					// ignore AUTONUM column at beginning of MONTHLY_BUDGET table
@@ -937,7 +940,8 @@ public class GeneralLedger {
 					// get the Type object for this account name
 					Account budgetAccount = getAccount(stringAccount);
 					String stringAmount = resultSet.getString("AMOUNT");
-					double budgetAmount = Double.parseDouble(stringAmount);
+					BigDecimal budgetAmount = new BigDecimal(stringAmount);
+					budgetAmount = budgetAmount.setScale(2, BigDecimal.ROUND_CEILING);
 					addMonthlyBudgetAccount(budgetMonth, budgetYear, budgetAccount, budgetAmount);
 				}
 				if (commandName.equals("LoadDefaultBudget")) {
@@ -946,7 +950,8 @@ public class GeneralLedger {
 					// get the Type object for this account name
 					Account budgetAccount = getAccount(stringAccount);
 					String stringAmount = resultSet.getString("AMOUNT");
-					double budgetAmount = Double.parseDouble(stringAmount);
+					BigDecimal budgetAmount = new BigDecimal(stringAmount);
+					budgetAmount = budgetAmount.setScale(2, BigDecimal.ROUND_CEILING);
 					addDefaultBudgetAccount(budgetAccount, budgetAmount);
 				}
 				if (commandName.equals("LoadSingleEntry")) {
@@ -964,9 +969,12 @@ public class GeneralLedger {
 					stringAccount = stringAccount.replace("''", "'"); // replace single quotes with '' to make it compatible with SQL database
 					Account entryAccount = getAccount(stringAccount);
 					String stringAmount  = resultSet.getString("AMOUNT");
-					double entryAmount = Double.parseDouble(stringAmount);
+					BigDecimal entryAmount = new BigDecimal(stringAmount);
+					entryAmount = entryAmount.setScale(2, BigDecimal.ROUND_CEILING);
 					// if this is an expense, multiple amount by -1 before entering into database
-					if (entryAccount.getIsAnExpense()) entryAmount = entryAmount * -1;
+					if (entryAccount.getIsAnExpense()) {
+						entryAmount = entryAmount.multiply(NEGATIVE);
+					}
 					addSingleEntry(entryDate, entryDesc, entryAccount, entryAmount);
 				}
 				if (commandName.equals("LoadRepeatEntry")) {
@@ -991,9 +999,12 @@ public class GeneralLedger {
 					stringAccount = stringAccount.replace("''", "'"); // replace single quotes with '' to make it compatible with SQL database
 					Account entryAccount = getAccount(stringAccount);
 					String stringAmount  = resultSet.getString("AMOUNT");
-					double entryAmount = Double.parseDouble(stringAmount);
+					BigDecimal entryAmount = new BigDecimal(stringAmount);
+					entryAmount = entryAmount.setScale(2, BigDecimal.ROUND_CEILING);
 					// if this is an expense, multiple amount by -1 before entering into database
-					if (entryAccount.getIsAnExpense()) entryAmount = entryAmount * -1;
+					if (entryAccount.getIsAnExpense()) {
+						entryAmount = entryAmount.multiply(NEGATIVE);
+					}
 					addRepeatingEntry(startDate, endDate, entryDesc, entryAccount, entryAmount);
 				}
 			} catch (SQLException e) {
@@ -1001,6 +1012,5 @@ public class GeneralLedger {
 				e.printStackTrace();
 			}
 		}
-
 	}
 }

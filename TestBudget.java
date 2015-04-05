@@ -1,8 +1,8 @@
 package budget_program;
 
 import java.util.*;
-
 import jodd.datetime.JDateTime;
+import java.math.BigDecimal;
 
 /**
  * This class provides a text-based user-interface to let the user create and maintain a monthly ledger 
@@ -16,12 +16,12 @@ import jodd.datetime.JDateTime;
 
 public class TestBudget {
 
-	static final boolean prohibitBlankInput = false;
-	static final boolean allowBlankInput = true;
+	static final boolean PROHIBIT_BLANK_INPUT = false;
+	static final boolean ALLOW_BLANK_INPUT = true;
 
 	static GeneralLedger myGeneralLedger = new GeneralLedger();
 
-	static Scanner myInputScanner = new Scanner(System.in);		
+	static Scanner myInputScanner = new Scanner(System.in);	
 
 	/**
 	 * This method controls the main UI of the budget_program class
@@ -214,12 +214,13 @@ public class TestBudget {
 		System.out.println("Enter 'Y' if the account is included in the budget or 'N' if the account is not included in the budget:");	
 		boolean inputIsInBudget;
 		inputChoice = myInputScanner.nextLine().charAt(0);
-		Double inputDefaultBudgetAmt = 0.0;
+		BigDecimal inputDefaultBudgetAmt = new BigDecimal("0");
+		inputDefaultBudgetAmt = inputDefaultBudgetAmt.setScale(2, BigDecimal.ROUND_CEILING);
 		if (inputChoice == 'Y' | inputChoice == 'y') {
 			inputIsInBudget = true;
 			if (inputInDefaultAccountList == true) {
 				System.out.println("Enter default amount to budget for this account or enter blank to abort:");	
-				inputDefaultBudgetAmt = inputDouble(allowBlankInput);
+				inputDefaultBudgetAmt = inputAmount(ALLOW_BLANK_INPUT);
 				if (inputDefaultBudgetAmt == null) return;
 			}
 		} else {
@@ -260,10 +261,10 @@ public class TestBudget {
 	private static void addRepeatingEntry() {
 		// enter start date for entry
 		String checkForEntries = "";
-		JDateTime startDate = chooseDate("Enter Start Date of Repeating Entries (or leave blank for all months):", allowBlankInput, checkForEntries);
+		JDateTime startDate = chooseDate("Enter Start Date of Repeating Entries (or leave blank for all months):", ALLOW_BLANK_INPUT, checkForEntries);
 
 		// enter end date for entry
-		JDateTime endDate = chooseDate("Enter End Date of Repeating Entries (or leave blank for all months):", allowBlankInput, checkForEntries);
+		JDateTime endDate = chooseDate("Enter End Date of Repeating Entries (or leave blank for all months):", ALLOW_BLANK_INPUT, checkForEntries);
 
 		// enter description
 		System.out.println("Enter Entry Desc:");
@@ -272,7 +273,7 @@ public class TestBudget {
 		// select account
 		Account inputAcct = null;
 		try {
-			inputAcct = chooseAccount("", allowBlankInput);
+			inputAcct = chooseAccount("", ALLOW_BLANK_INPUT);
 			if (inputAcct == null) return;
 		} catch (IllegalArgumentException e) {
 			System.out.println("Error: Database has no accounts to choose from. Aborting input.");
@@ -280,7 +281,7 @@ public class TestBudget {
 		}
 		// enter amount
 		System.out.println("Enter Amount For Each Month:");
-		Double inputAmt = inputDouble(allowBlankInput);
+		BigDecimal inputAmt = inputAmount(ALLOW_BLANK_INPUT);
 		if (inputAmt == null) return;
 
 		myGeneralLedger.addRepeatingEntry(startDate, endDate, inputDesc, inputAcct, inputAmt);
@@ -292,7 +293,7 @@ public class TestBudget {
 	private static void addSingleEntry() {
 		// enter date for entry
 		String checkForEntries = "";
-		JDateTime entryDate = chooseDate("Enter Entry Date:", allowBlankInput, checkForEntries);
+		JDateTime entryDate = chooseDate("Enter Entry Date:", ALLOW_BLANK_INPUT, checkForEntries);
 		if (entryDate == null) return;
 
 		// enter description
@@ -302,7 +303,7 @@ public class TestBudget {
 		// select account
 		Account inputAcct = null;
 		try {
-			inputAcct = chooseAccount("", allowBlankInput);
+			inputAcct = chooseAccount("", ALLOW_BLANK_INPUT);
 			if (inputAcct == null) return;
 		} catch (IllegalArgumentException e) {
 			System.out.println("Error: Database has no accounts to choose from. Aborting input.");
@@ -311,7 +312,7 @@ public class TestBudget {
 
 		// enter amount
 		System.out.println("Enter Entry Amount:");
-		Double inputAmt = inputDouble(allowBlankInput);
+		BigDecimal inputAmt = inputAmount(ALLOW_BLANK_INPUT);
 		if (inputAmt == null) return;
 
 		try {
@@ -469,12 +470,12 @@ public class TestBudget {
 
 		if (menuChoice == 'A' || menuChoice == 'a') {
 			// enter account
-			Account inputType = chooseAccount("Select account to add to " + budgetType + " budget ",allowBlankInput);
+			Account inputType = chooseAccount("Select account to add to " + budgetType + " budget ",ALLOW_BLANK_INPUT);
 			if (inputType == null) return;
 
 			// enter amount
 			System.out.println("Enter " + budgetType + " budget amount:");
-			Double inputAmt = inputDouble(allowBlankInput);
+			BigDecimal inputAmt = inputAmount(ALLOW_BLANK_INPUT);
 			if (inputAmt == null) return;
 
 			if (budgetType.equals("Monthly")) {
@@ -486,7 +487,7 @@ public class TestBudget {
 
 		if (menuChoice == 'R' || menuChoice == 'r') {
 			// enter account
-			Account inputType = chooseAccount("Select account to remove from " + budgetType + " budget ",allowBlankInput);
+			Account inputType = chooseAccount("Select account to remove from " + budgetType + " budget ",ALLOW_BLANK_INPUT);
 			if (inputType == null) return;
 
 			if (budgetType.equals("Monthly")) {
@@ -498,12 +499,12 @@ public class TestBudget {
 
 		if (menuChoice == 'U' || menuChoice == 'u') {
 			// enter account
-			Account inputType = chooseAccount("Select account to update in " + budgetType + " budget ",allowBlankInput);
+			Account inputType = chooseAccount("Select account to update in " + budgetType + " budget ",ALLOW_BLANK_INPUT);
 			if (inputType == null) return;
 
 			// enter amount
 			System.out.println("Enter " + budgetType + " budget amount:");
-			Double inputAmt = inputDouble(allowBlankInput);
+			BigDecimal inputAmt = inputAmount(ALLOW_BLANK_INPUT);
 			if (inputAmt == null) return;
 
 			try {
@@ -561,7 +562,7 @@ public class TestBudget {
 	 */
 	private static void deleteRepeatingEntry() {
 		String checkForEntries = "R";
-		JDateTime deleteMonth = chooseDate("Enter Month To Display Repeating Entries For or leave blank for all months (MM/DD/YYYY):", allowBlankInput, checkForEntries);
+		JDateTime deleteMonth = chooseDate("Enter Month To Display Repeating Entries For or leave blank for all months (MM/DD/YYYY):", ALLOW_BLANK_INPUT, checkForEntries);
 
 		if (deleteMonth == null) {
 			System.out.println("List of all the repeating entries");
@@ -572,7 +573,7 @@ public class TestBudget {
 		}
 
 		System.out.println("Enter index of which entry for " + convertDatetoString(deleteMonth) + " that you want to delete: (starting with 1)");
-		Integer deleteIndex = inputNumericSelection(allowBlankInput);
+		Integer deleteIndex = inputNumericSelection(ALLOW_BLANK_INPUT);
 		if (deleteIndex == null) return;
 
 		int entryCnt = myGeneralLedger.getRepeatingEntryList(deleteMonth).size();
@@ -600,7 +601,7 @@ public class TestBudget {
 	 */
 	private static void deleteSingleEntry() {
 		String checkForEntries = "S";
-		JDateTime deleteDate = chooseDate("Enter Date To Remove Entry From (MM/DD/YYYY):", allowBlankInput, checkForEntries);
+		JDateTime deleteDate = chooseDate("Enter Date To Remove Entry From (MM/DD/YYYY):", ALLOW_BLANK_INPUT, checkForEntries);
 		if (deleteDate == null) return;
 		System.out.println("Do you want to see all the entries for " + convertDatetoString(deleteDate) + "? (Y/N)");
 		String printDateEntries = myInputScanner.nextLine();
@@ -610,7 +611,7 @@ public class TestBudget {
 		} 
 
 		System.out.println("Enter index of which entry for " + convertDatetoString(deleteDate) + " that you want to delete: (starting with 1)");
-		Integer deleteIndex = inputNumericSelection(allowBlankInput);
+		Integer deleteIndex = inputNumericSelection(ALLOW_BLANK_INPUT);
 		if (deleteIndex == null) return;
 
 		int entryCnt = myGeneralLedger.getSingleEntryListForDate(deleteDate).size();
@@ -626,20 +627,20 @@ public class TestBudget {
 	}
 
 	/**
-	 * This inputs a double number from the user
+	 * This inputs an amount from the user
 	 * 
 	 * @param allowBlankInput - if true then return null if input is blank
-	 * @return a Double object or null
+	 * @return a BigDecimal object or null
 	 */
-	private static Double inputDouble(boolean allowBlankInput) {
+	private static BigDecimal inputAmount(boolean allowBlankInput) {
 		int badInput = 0;
-		Double inputNum = 0.0;
+		BigDecimal inputNum = new BigDecimal("0");
 		do {
 			badInput = 0;
 			String stringInput = myInputScanner.nextLine();
 			if (!stringInput.equals("")) {
 				try { 
-					inputNum = Double.parseDouble(stringInput); 
+					inputNum = new BigDecimal(stringInput); 
 				} catch(NumberFormatException e) { 
 					System.out.println("Input is not a number.");	
 					badInput = 1;
@@ -654,9 +655,10 @@ public class TestBudget {
 			}
 		} while (badInput == 1);
 
+		inputNum = inputNum.setScale(2, BigDecimal.ROUND_CEILING);
 		return inputNum;
 	}
-	
+
 	/**
 	 * This inputs an Integer from the user
 	 * 
@@ -733,7 +735,7 @@ public class TestBudget {
 	private static void updateRepeatingEntry() {
 		System.out.println("Do you want to see all the repeating entries for a specific month or see all repeating entries?");
 		String checkForEntries = "R";
-		JDateTime updateMonth = chooseDate("Enter Date of month to see repeating entries for, or leave blank for all repeating entires (MM/DD/YYYY):", allowBlankInput, checkForEntries);
+		JDateTime updateMonth = chooseDate("Enter Date of month to see repeating entries for, or leave blank for all repeating entires (MM/DD/YYYY):", ALLOW_BLANK_INPUT, checkForEntries);
 
 		if (updateMonth == null) {
 			System.out.println("List of all the repeating entries");
@@ -744,7 +746,7 @@ public class TestBudget {
 		}
 
 		System.out.println("Enter index of which entry for " + convertDatetoString(updateMonth) + " that you want to update: (starting with 1)");
-		Integer updateIndex = inputNumericSelection(allowBlankInput);
+		Integer updateIndex = inputNumericSelection(ALLOW_BLANK_INPUT);
 		if (updateIndex == null) return;
 
 		RepeatingEntry tmpEntry;
@@ -758,13 +760,13 @@ public class TestBudget {
 		JDateTime oldStartDate = tmpEntry.getStartDate();
 		JDateTime oldEndDate = tmpEntry.getEndDate();
 		Account oldAcct = tmpEntry.getAccount();
-		double oldAmt = tmpEntry.getAmount();
+		BigDecimal oldAmt = tmpEntry.getAmount();
 
 		String newDesc;
 		JDateTime newStartDate;
 		JDateTime newEndDate;
 		Account newAcct;
-		Double newAmt;
+		BigDecimal newAmt;
 
 		System.out.println("Old description is " + oldDesc);
 		System.out.println("Enter new description or leave blank to keep old description:");
@@ -793,7 +795,7 @@ public class TestBudget {
 
 		System.out.println("Old account is " + oldAcct.getAccountName());
 		try {
-			newAcct = chooseAccount("Enter new account or leave blank to keep old account:", allowBlankInput);
+			newAcct = chooseAccount("Enter new account or leave blank to keep old account:", ALLOW_BLANK_INPUT);
 		} catch (IllegalArgumentException e) {
 			System.out.println("Error: Database has no accounts to choose from. Aborting input.");
 			return;
@@ -804,7 +806,7 @@ public class TestBudget {
 
 		System.out.println("Old amount is " + oldAmt);
 		System.out.println("Enter new amount or leave blank to keep old amount:");
-		newAmt = inputDouble(allowBlankInput);
+		newAmt = inputAmount(ALLOW_BLANK_INPUT);
 		if (newAmt == null) {
 			newAmt = oldAmt;
 		}
@@ -822,7 +824,7 @@ public class TestBudget {
 	private static void updateSingleEntry() {
 		// TODO: prompt user to print entries for a given date range or for a month instead of just for a single date
 		String checkForEntries = "S";
-		JDateTime updateDate = chooseDate("Enter Date To Update Entry On (MM/DD/YYYY):", allowBlankInput, checkForEntries);
+		JDateTime updateDate = chooseDate("Enter Date To Update Entry On (MM/DD/YYYY):", ALLOW_BLANK_INPUT, checkForEntries);
 		if (updateDate == null) return;
 		System.out.println("Do you want to see all the entries for " + convertDatetoString(updateDate) + "? (Y/N)");
 		String printDateEntries = myInputScanner.nextLine();
@@ -837,7 +839,7 @@ public class TestBudget {
 		do {
 			badInput = 0;
 			System.out.println("Enter index of which entry for " + convertDatetoString(updateDate) + " that you want to update: (starting with 1)");
-			updateIndex = inputNumericSelection(allowBlankInput);
+			updateIndex = inputNumericSelection(ALLOW_BLANK_INPUT);
 			if (updateIndex == null) return;
 			if (myGeneralLedger.getSingleEntryListForDate(updateDate).contains(updateIndex-1)) {
 				tmpEntry = myGeneralLedger.getSingleEntryListForDate(updateDate).get(updateIndex-1);
@@ -849,12 +851,12 @@ public class TestBudget {
 		String oldDesc = tmpEntry.getDesc();
 		JDateTime oldDate = tmpEntry.getDate();
 		Account oldAcct = tmpEntry.getAccount();
-		double oldAmt = tmpEntry.getAmount();
+		BigDecimal oldAmt = tmpEntry.getAmount();
 
 		String newDesc;
 		JDateTime newDate;
 		Account newAcct;
-		Double newAmt;
+		BigDecimal newAmt;
 
 		System.out.println("Old description is " + oldDesc);
 		System.out.println("Enter new description or leave blank to keep old description:");
@@ -874,7 +876,7 @@ public class TestBudget {
 
 		System.out.println("Old account is " + oldAcct.getAccountName());
 		try {
-			newAcct = chooseAccount("Enter new account or leave blank to keep old account:", allowBlankInput);
+			newAcct = chooseAccount("Enter new account or leave blank to keep old account:", ALLOW_BLANK_INPUT);
 		} catch (IllegalArgumentException e) {
 			System.out.println("Error: Database has no accounts to choose from. Aborting input.");
 			return;
@@ -885,7 +887,7 @@ public class TestBudget {
 
 		System.out.println("Old amount is " + oldAmt);
 		System.out.println("Enter new amount or leave blank to keep old amount:");
-		newAmt = inputDouble(allowBlankInput);
+		newAmt = inputAmount(ALLOW_BLANK_INPUT);
 		if (newAmt == null) {
 			newAmt = oldAmt;
 		}
