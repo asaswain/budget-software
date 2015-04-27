@@ -15,6 +15,9 @@ public class RepeatingEntry extends MultipleEntry implements Comparable<Repeatin
 
 	private final BigDecimal NEGATIVE = new BigDecimal("-1");
 	
+	// used to store type of MultipleEntry this is
+	private static final String TYPE = new String("Repeating");
+	
 	/**
 	 * This is a blank constructor
 	 */
@@ -78,7 +81,7 @@ public class RepeatingEntry extends MultipleEntry implements Comparable<Repeatin
 	 * 
 	 * @return the amount of the entry as a BigDecimal
 	 */
-	public BigDecimal getAmount() {
+	public BigDecimal getMonthlyAmount() {
 		return monthlyAmount;
 	}
 	
@@ -87,7 +90,7 @@ public class RepeatingEntry extends MultipleEntry implements Comparable<Repeatin
 	 * 
 	 * @param the amount of the entry as a BigDecimal
 	 */
-	public void setAmount(BigDecimal newAmount) {
+	public void setTotalAmount(BigDecimal newAmount) {
 		monthlyAmount = newAmount;
 	}
 	
@@ -96,5 +99,9 @@ public class RepeatingEntry extends MultipleEntry implements Comparable<Repeatin
 	 */
 	public int compareTo(RepeatingEntry other) {
 	     return desc.compareTo(other.desc);
+	}
+	
+	public String getEntryType() {
+		return TYPE;
 	}
 }

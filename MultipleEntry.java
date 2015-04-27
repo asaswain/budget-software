@@ -88,6 +88,8 @@ public abstract class MultipleEntry extends Entry {
 			throw new IllegalArgumentException("End date can't be before start date");
 		}
 	}
+	
+	public abstract String getEntryType();
 }
 
 

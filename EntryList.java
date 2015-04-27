@@ -5,17 +5,18 @@ import java.util.*;
 import jodd.datetime.JDateTime;
 
 /**
-* The EntryList class consists of: 
-* a TreeMap of single entries indexed by date. Each day contains an ArrayList of single entries.
-* a TreeMap of repeating entries indexed by the name of the repeating entry. 
-* 
-* @author Asa Swain
-*/
+ * The EntryList class consists of: 
+ * a TreeMap of single entries indexed by date. Each day contains an ArrayList of single entries.
+ * a TreeMap of repeating entries indexed by the name of the repeating entry. 
+ * 
+ * @author Asa Swain
+ */
 
 public class EntryList {	
 	// use date as key in HashMap to return an arraylist of entries for that date
 	private TreeMap<JDateTime, ArrayList<SingleEntry>> singleEntryList;
 	// index repeating entries based on their description
+	private TreeMap<String,InstallmentEntry> installmentEntryList;
 	private TreeMap<String,RepeatingEntry> repeatingEntryList;
 
 	/**
@@ -23,9 +24,10 @@ public class EntryList {
 	 */
 	public EntryList() {
 		singleEntryList = new TreeMap<JDateTime, ArrayList<SingleEntry>>();
+		installmentEntryList = new TreeMap<String,InstallmentEntry>();
 		repeatingEntryList = new TreeMap<String,RepeatingEntry>();
 	}
-	
+
 	/**
 	 * This is a constructor for a single entry
 	 * 
@@ -34,9 +36,10 @@ public class EntryList {
 	public EntryList(SingleEntry newEntry) {
 		singleEntryList = new TreeMap<JDateTime, ArrayList<SingleEntry>>();
 		addSingleEntry(newEntry);
+		installmentEntryList = new TreeMap<String,InstallmentEntry>();
 		repeatingEntryList = new TreeMap<String,RepeatingEntry>();
 	}
-	
+
 	/**
 	 * This adds a single entry onto the list of entries for a date
 	 * 
@@ -50,7 +53,7 @@ public class EntryList {
 		tmpList.add(newEntry);
 		singleEntryList.put(newEntry.getDate(), tmpList);
 	}
-	
+
 	/**
 	 * This adds a single entry into a specific location in the list of entries for a date
 	 * 
@@ -65,6 +68,15 @@ public class EntryList {
 		tmpList.add(targetIndex, newEntry);
 		singleEntryList.put(newEntry.getDate(), tmpList);
 	}
+
+	/**
+	 * This adds a installment entry onto the list
+	 * 
+	 * @param newEntry - the new InstallmentEntry to add
+	 */
+	public void addInstallmentEntry(InstallmentEntry newEntry) {
+		installmentEntryList.put(newEntry.getDesc(), newEntry);
+	}
 	
 	/**
 	 * This adds a repeating entry onto the list
@@ -74,7 +86,7 @@ public class EntryList {
 	public void addRepeatingEntry(RepeatingEntry newEntry) {
 		repeatingEntryList.put(newEntry.getDesc(), newEntry);
 	}
-	
+
 	/**
 	 * This removes an entry from the list of single entries (making sure it's there first)
 	 *
@@ -91,7 +103,7 @@ public class EntryList {
 		}
 		singleEntryList.put(targetDate,tmpList);
 	}
-	
+
 	/**
 	 * This removes an entry from the list of single entries (making sure it's there first)
 	 *
@@ -109,10 +121,38 @@ public class EntryList {
 	}
 	
 	/**
+	 * This removes an entry from the list of installment entries (making sure it's there first)
+	 *
+	 * @param targetDesc - the description of the InstallmentEntry to delete
+	 * @exception IllegalArgumentException - if the list of installment entries for this month does not contain an item with the targetDesc description
+	 */
+	public void deleteInstallmentEntry(String targetDesc) {
+		if ((installmentEntryList != null) && (installmentEntryList.containsKey(targetDesc))) {
+			installmentEntryList.remove(targetDesc);
+		} else {
+			throw new IllegalArgumentException("The list of entries for this month doesn't have the repeating entry you are trying to delete");
+		}
+	}
+
+	/**
+	 * This removes an entry from the list of installment entries (making sure it's there first)
+	 *
+	 * @param delEntry - the InstallmentEntry to delete
+	 * @exception IllegalArgumentException - if the list of entries for this month does not contain the delEntry object
+	 */
+	public void deleteInstallmentEntry(InstallmentEntry delEntry) {
+		if ((installmentEntryList != null) && (installmentEntryList.containsKey(delEntry.getDesc()))) {
+			installmentEntryList.remove(delEntry);
+		} else {
+			throw new IllegalArgumentException("The list of entries for this month doesn't have the entry you are trying to delete");
+		}
+	}
+
+	/**
 	 * This removes an entry from the list of repeating entries (making sure it's there first)
 	 *
-	 * @param targetDesc - the description of the repeating entry to delete
-	 * @exception IllegalArgumentException - if the list of repeating entries for this month does not at least "targetIndex" number of items in it
+	 * @param targetDesc - the description of the RepeatingEntry to delete
+	 * @exception IllegalArgumentException - if the list of repeating entries for this month does not contain an item with the targetDesc description
 	 */
 	public void deleteRepeatingEntry(String targetDesc) {
 		if ((repeatingEntryList != null) && (repeatingEntryList.containsKey(targetDesc))) {
@@ -121,7 +161,7 @@ public class EntryList {
 			throw new IllegalArgumentException("The list of entries for this month doesn't have the repeating entry you are trying to delete");
 		}
 	}
-	
+
 	/**
 	 * This removes an entry from the list of repeating entries (making sure it's there first)
 	 *
@@ -132,10 +172,10 @@ public class EntryList {
 		if ((repeatingEntryList != null) && (repeatingEntryList.containsKey(delEntry.getDesc()))) {
 			repeatingEntryList.remove(delEntry);
 		} else {
-			throw new IllegalArgumentException("The list of entries for this month doesn't have the repeating entry you are trying to delete");
+			throw new IllegalArgumentException("The list of entries for this month doesn't have the entry you are trying to delete");
 		}
 	}
-	
+
 	/**
 	 * This removes the old SingleEntry and adds the new SingleEntry from the list of entries
 	 *
@@ -152,7 +192,7 @@ public class EntryList {
 		}
 		addSingleEntry(newEntry);
 	}
-	
+
 	/**
 	 * This updates an entry from the list of entries (making sure it's there first)
 	 *
@@ -176,6 +216,25 @@ public class EntryList {
 	}
 	
 	/**
+	 * This replaces the old Installment Entry object with a new one in the TreeMap
+	 *
+	 * @param oldDesc - the description of the old InstallmentEntry replace
+	 * @param newEntry - the new InstallmentEntry data to use in the update
+	 * @exception IllegalArgumentException - if a InstallmentEntry object with the oldDesc does not exist in the TreeMap
+	 */
+	public void updateInstallmentEntry(String oldDesc, InstallmentEntry newEntry) {
+		if (installmentEntryList.containsKey(oldDesc)) {
+			try {
+				installmentEntryList.replace(oldDesc, newEntry);
+			} catch (IllegalArgumentException e) {
+				throw new IllegalArgumentException(e);
+			}
+		} else {
+			throw new IllegalArgumentException("The list of entries doesn't have the entry you are trying to update");
+		}
+	}
+
+	/**
 	 * This replaces the old Repeating Entry object with a new one in the TreeMap
 	 *
 	 * @param oldDesc - the description of the old RepeatingEntry replace
@@ -190,10 +249,10 @@ public class EntryList {
 				throw new IllegalArgumentException(e);
 			}
 		} else {
-			throw new IllegalArgumentException("The list of repeating entries doesn't have the entry you are trying to update");
+			throw new IllegalArgumentException("The list of entries doesn't have the entry you are trying to update");
 		}
 	}
-	
+
 	/**
 	 * This checks if a single entry is in the list of entries
 	 * 
@@ -204,7 +263,7 @@ public class EntryList {
 		ArrayList<SingleEntry> tmpList = singleEntryList.get(testEntry.getDate());	
 		return tmpList.contains(testEntry);
 	}
-	
+
 	/**
 	 * This returns a list of all the SingleEntries for the entire list
 	 * 
@@ -220,7 +279,7 @@ public class EntryList {
 		}
 		return masterList;
 	};
-	
+
 	/**
 	 * This returns a list of all the SingleEntries for a specific date
 	 * 
@@ -229,7 +288,7 @@ public class EntryList {
 	public ArrayList<SingleEntry> getSingleEntryList(JDateTime searchDate) {
 		return singleEntryList.get(searchDate);
 	};
-	
+
 	/**
 	 * This returns the nth SingleEntry on a specific date
 	 * 
@@ -246,43 +305,117 @@ public class EntryList {
 			throw new IllegalArgumentException("Ledger doesn't have " + loc + " entries for this date");
 		}
 	}
-	
+
 	/**
-	 * This returns a list of repeating entries for all months
+	 * This returns a list of installment entries for a target month or for all months
 	 * 
-	 * @return - an ArrayList of repeating entries
+	 * @param targetMonth - this is the month that we want to return all the installment entries for (if blank return entries for all months)
+	 * @return - an ArrayList of installment entries
 	 */
-	public ArrayList<RepeatingEntry> getRepeatingEntryList() {
-		ArrayList<RepeatingEntry> returnList = new ArrayList<RepeatingEntry>();
-		for (String tmpDesc : repeatingEntryList.keySet()){
-			RepeatingEntry tmpRepeatingEntry = repeatingEntryList.get(tmpDesc);
-				returnList.add(tmpRepeatingEntry);	
+	public ArrayList<InstallmentEntry> getInstallmentEntryList(JDateTime targetMonth) {
+		ArrayList<InstallmentEntry> returnList = new ArrayList<InstallmentEntry>();
+		for (String tmpDesc : installmentEntryList.keySet()){
+				InstallmentEntry tmpInstallmentEntry = installmentEntryList.get(tmpDesc);
+				if (targetMonth != null) {
+					if ((targetMonth.isAfterDate(tmpInstallmentEntry.getStartDate()) || targetMonth.equals(tmpInstallmentEntry.getStartDate()))  && 
+							(targetMonth.isBeforeDate(tmpInstallmentEntry.getEndDate()) || targetMonth.equals(tmpInstallmentEntry.getEndDate()))) {
+						returnList.add(tmpInstallmentEntry);
+					} 
+				} else {
+					returnList.add(tmpInstallmentEntry);
+				}
 		}
 		return returnList;
 	}
 	
 	/**
-	 * This returns a list of repeating entries for the target month
+	 * This returns a list of repeating entries for a target month or for all months
 	 * 
-	 * @param targetMonth - this is the month that we want to return all the repeating entries for (if blank return repeating entries for all months)
+	 * @param targetMonth - this is the month that we want to return all the repeating entries for (if blank return entries for all months)
 	 * @return - an ArrayList of repeating entries
 	 */
 	public ArrayList<RepeatingEntry> getRepeatingEntryList(JDateTime targetMonth) {
 		ArrayList<RepeatingEntry> returnList = new ArrayList<RepeatingEntry>();
 		for (String tmpDesc : repeatingEntryList.keySet()){
-			RepeatingEntry tmpRepeatingEntry = repeatingEntryList.get(tmpDesc);
-			if (targetMonth != null) {
-				if ((targetMonth.isAfterDate(tmpRepeatingEntry.getStartDate()) || targetMonth.equals(tmpRepeatingEntry.getStartDate()))  && 
-						(targetMonth.isBeforeDate(tmpRepeatingEntry.getEndDate()) || targetMonth.equals(tmpRepeatingEntry.getEndDate()))) {
+				RepeatingEntry tmpRepeatingEntry = repeatingEntryList.get(tmpDesc);
+				if (targetMonth != null) {
+					if ((targetMonth.isAfterDate(tmpRepeatingEntry.getStartDate()) || targetMonth.equals(tmpRepeatingEntry.getStartDate()))  && 
+							(targetMonth.isBeforeDate(tmpRepeatingEntry.getEndDate()) || targetMonth.equals(tmpRepeatingEntry.getEndDate()))) {
+						returnList.add(tmpRepeatingEntry);
+					} 
+				} else {
 					returnList.add(tmpRepeatingEntry);
-				} 
-			} else {
-				returnList.add(tmpRepeatingEntry);	
-			}
+				}
 		}
 		return returnList;
 	}
 	
+//	/**
+//	 * This returns a list of installment entries for a target month or for all months
+//	 * 
+//	 * @param targetMonth - this is the month that we want to return all the installment entries for (if blank return entries for all months)
+//	 * @return - an ArrayList of installment entries
+//	 /*
+//	public ArrayList<InstallmentEntry> getInstallmentEntryList(JDateTime targetMonth) {
+//		ArrayList<InstallmentEntry> returnList = new ArrayList<InstallmentEntry>();
+//		try {
+//			ArrayList<MultipleEntry> installmentEntryList = getMultipleEntryList(targetMonth, "installment");			
+//			for (MultipleEntry tmpInstallmentEntry : installmentEntryList) {
+//				returnList.add((InstallmentEntry) tmpInstallmentEntry);
+//			}
+//			return returnList;	
+//		} catch (IllegalArgumentException e){
+//			throw new IllegalArgumentException(e);
+//		}
+//	}
+//	
+//	*//**
+//	 * This returns a list of repeating entries for a target month or for all months
+//	 * 
+//	 * @param targetMonth - this is the month that we want to return all the repeating entries for (if blank return entries for all months)
+//	 * @return - an ArrayList of repeating entries
+//	 */
+//	public ArrayList<RepeatingEntry> getRepeatingEntryList(JDateTime targetMonth) {
+//		ArrayList<RepeatingEntry> returnList = new ArrayList<RepeatingEntry>();
+//		try {
+//			ArrayList<MultipleEntry> installmentEntryList = getMultipleEntryList(targetMonth, "repeating");			
+//			for (MultipleEntry tmpRepeatingEntry : installmentEntryList) {
+//				returnList.add((RepeatingEntry) tmpRepeatingEntry);
+//			}
+//			return returnList;	
+//		} catch (IllegalArgumentException e){
+//			throw new IllegalArgumentException(e);
+//		}
+//	}
+//
+//	/**
+//	 * This returns a list of multiple entries for a target month or for all months
+//	 * 
+//	 * @param targetMonth - this is the month that we want to return all the multiple entries for (if blank return entries for all months)
+//	 * @param entryType - the type of MultpleEntry to select, either "installment" or "repeating"
+//	 * @return - an ArrayList of multiple entries
+//	 */
+//	private ArrayList<MultipleEntry> getMultipleEntryList(JDateTime targetMonth, String entryType) {
+//		if ((entryType == null) || (!entryType.equals("installment") && !entryType.equals("repeating"))) {
+//			throw new IllegalArgumentException("Type of entry to get is invalid");
+//		}	
+//		ArrayList<MultipleEntry> returnList = new ArrayList<MultipleEntry>();
+//		for (String tmpDesc : multipleEntryList.keySet()){
+//			if (multipleEntryList.get(tmpDesc).getEntryType().equals(entryType)) {
+//				MultipleEntry tmpMultipleEntry = (MultipleEntry) multipleEntryList.get(tmpDesc);
+//				if (targetMonth != null) {
+//					if ((targetMonth.isAfterDate(tmpMultipleEntry.getStartDate()) || targetMonth.equals(tmpMultipleEntry.getStartDate()))  && 
+//							(targetMonth.isBeforeDate(tmpMultipleEntry.getEndDate()) || targetMonth.equals(tmpMultipleEntry.getEndDate()))) {
+//						returnList.add(tmpMultipleEntry);
+//					} 
+//				} else {
+//					returnList.add(tmpMultipleEntry);
+//				}
+//			}
+//		}
+//		return returnList;
+//	}
+
 	/**
 	 * This returns the number of SingleEntries in a specific date
 	 * 
@@ -297,7 +430,7 @@ public class EntryList {
 			return 0;
 		}
 	}
-	
+
 	/**
 	 * This returns a list of all dates in the datedEntryList
 	 * 
@@ -306,13 +439,13 @@ public class EntryList {
 	public ArrayList<JDateTime> getSingleEntryDateList() {
 		return new ArrayList<JDateTime>(singleEntryList.keySet());
 	};
-	
+
 	/**
 	 * This returns the number of SingleEntries in the entire datedEntryList
 	 * 
 	 * @return the number of entries in this month
 	 */
-	public int size() {
+	public int singleEntrySize() {
 		int totalSize = 0;
 		//keySet returns a set of all the keys in the TreeMap
 		for(JDateTime tmpDate : singleEntryList.keySet()){

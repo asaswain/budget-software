@@ -106,7 +106,7 @@ public class SingleEntry extends Entry implements Comparable<SingleEntry>{
 	 * 
 	 * @return the amount of the entry as a BigDecimal
 	 */
-	public BigDecimal getAmount() {
+	public BigDecimal getMonthlyAmount() {
 		return amount;
 	}
 
@@ -115,7 +115,7 @@ public class SingleEntry extends Entry implements Comparable<SingleEntry>{
 	 * 
 	 * @param the amount of the entry as a BigDecimal
 	 */
-	public void setAmount(BigDecimal newAmount) {
+	public void setTotalAmount(BigDecimal newAmount) {
 		amount = newAmount;
 	}
 

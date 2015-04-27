@@ -46,6 +46,6 @@ public abstract class Entry {
 		desc = newDesc;
 	}
 	
-	abstract BigDecimal getAmount();
-	abstract void setAmount(BigDecimal newAmount);
+	abstract BigDecimal getMonthlyAmount();
+	abstract void setTotalAmount(BigDecimal newAmount);
 }

@@ -47,7 +47,7 @@ public class GeneralLedger {
 	private SQLDatabaseConnection mySQLDatabase;
 
 	private final BigDecimal NEGATIVE = new BigDecimal("-1");
-	
+
 	/**
 	 * This is a blank constructor
 	 */
@@ -260,7 +260,6 @@ public class GeneralLedger {
 	 * @exception - if there is an error from the updateEntry method
 	 */
 	public void updateRepeatingEntry(String targetDesc, JDateTime inputStartDate, JDateTime inputEndDate, String inputDesc, Account inputAcct, BigDecimal inputAmt) {
-
 		if (inputStartDate.getDay() != 1) {
 			throw new IllegalArgumentException("Start Date must be at beginning of the month.");
 		}
@@ -271,6 +270,69 @@ public class GeneralLedger {
 		try {
 			RepeatingEntry inputEntry = new RepeatingEntry(inputStartDate, inputEndDate, inputAcct, inputDesc, inputAmt);
 			entryData.updateRepeatingEntry(targetDesc, inputEntry);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(e);
+		}
+	}
+
+	/**
+	 * This adds a new installment entry
+	 * 
+	 * @param startDate - month to start installment entry on
+	 * @param endDate - month to end installment entry on
+	 * @param inputDesc - description of installment entry
+	 * @param inputAcct - account number for installment entry
+	 * @param inputAmt - BigDecimal amount for installment entry
+	 */
+	public void addInstallmentEntry(JDateTime startDate, JDateTime endDate, String inputDesc, Account inputAcct, BigDecimal inputAmt) {
+		InstallmentEntry inputEntry = new InstallmentEntry(startDate, endDate, inputAcct, inputDesc, inputAmt);
+		try {
+			entryData.addInstallmentEntry(inputEntry);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(e);
+		}
+	}
+
+	/**
+	 * This deletes a installment entry from the ledger
+	 * 
+	 * @param targetDesc - the description of the installment entry to delete
+	 * @exception - if there is an error from the deleteInstallmentEntry method
+	 */
+	public void deleteInstallmentEntry(String targetDesc) {
+		try {
+			entryData.deleteInstallmentEntry(targetDesc);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(e);
+		}
+	}
+
+	/**
+	 * This updates a installment entry in a month
+	 * 
+	 * @param targetDesc - the description of the installment entry to update
+	 * @param inputStartDate - the new month start date
+	 * @param inputEndDate - the new month end date
+	 * @param inputDesc - the new description
+	 * @param inputAcct - the new type
+	 * @param inputAmt - the new amount
+	 * 
+	 * @exception - if the targetDate isn't at the beginning of the month
+	 * @exception - if the inputStartDate isn't at the beginning of the month
+	 * @exception - if the inputEndDate isn't at the beginning of the month
+	 * @exception - if there is an error from the updateEntry method
+	 */
+	public void updateInstallmentEntry(String targetDesc, JDateTime inputStartDate, JDateTime inputEndDate, String inputDesc, Account inputAcct, BigDecimal inputAmt) {
+		if (inputStartDate.getDay() != 1) {
+			throw new IllegalArgumentException("Start Date must be at beginning of the month.");
+		}
+		if (inputStartDate.getDay() != 1) {
+			throw new IllegalArgumentException("End Date must be at beginning of the month.");
+		}
+
+		try {
+			InstallmentEntry inputEntry = new InstallmentEntry(inputStartDate, inputEndDate, inputAcct, inputDesc, inputAmt);
+			entryData.updateInstallmentEntry(targetDesc, inputEntry);
 		} catch (IllegalArgumentException e) {
 			throw new IllegalArgumentException(e);
 		}
@@ -297,22 +359,23 @@ public class GeneralLedger {
 	}
 
 	/**
-	 * Get an ArrayList object of all the Repeating Entries for all months
-	 * 
-	 * @return - an ArrayList object of all the Repeating Entries found for all months
-	 */
-	public ArrayList<RepeatingEntry> getRepeatingEntryList() {
-		return entryData.getRepeatingEntryList();
-	}
-	
-	/**
-	 * Get an ArrayList object of all the Repeating Entries for the target month
+	 * Get an ArrayList object of all the Repeating Entries for the target month or all months
 	 * 
 	 * @param targetMonth - the month that we want to display all the repeating entries for (if null then display all repeating entries)
 	 * @return - an ArrayList object of all the Repeating Entries found for this month
 	 */
 	public ArrayList<RepeatingEntry> getRepeatingEntryList(JDateTime targetMonth) {
 		return entryData.getRepeatingEntryList(targetMonth);
+	}
+
+	/**
+	 * Get an ArrayList object of all the Installment Entries for the target month or all months
+	 * 
+	 * @param targetMonth - the month that we want to display all the repeating entries for (if null then display all repeating entries)
+	 * @return - an ArrayList object of all the Installment Entries found for this month
+	 */
+	public ArrayList<InstallmentEntry> getInstallmentEntryList(JDateTime targetMonth) {
+		return entryData.getInstallmentEntryList(targetMonth);
 	}
 
 	/**
@@ -519,7 +582,7 @@ public class GeneralLedger {
 		// variable to keep track of it SQL Tables exist
 		private boolean SQLTablesExist[];
 
-		final int NBR_SQL_DATABASES = 5;
+		final int NBR_SQL_DATABASES = 6;
 
 		/**
 		 * This is a blank constructor
@@ -560,6 +623,7 @@ public class GeneralLedger {
 			executeSQLCommand("LoadAccountList"); 
 			executeSQLCommand("LoadSingleEntry");
 			executeSQLCommand("LoadRepeatEntry");
+			executeSQLCommand("LoadInstallmentEntry");
 			executeSQLCommand("LoadMonthlyBudgets");
 			executeSQLCommand("LoadDefaultBudget");
 		}
@@ -572,8 +636,9 @@ public class GeneralLedger {
 		 */
 		public void saveDatabasesToSQL() {
 			mySQLDatabase.executeSQLCommand("SaveAccountList");
-			mySQLDatabase.executeSQLCommand("SaveSingleEntries");
-			mySQLDatabase.executeSQLCommand("SaveRepeatEntries");
+			mySQLDatabase.executeSQLCommand("SaveSingleEntry");
+			mySQLDatabase.executeSQLCommand("SaveRepeatEntry");
+			mySQLDatabase.executeSQLCommand("SaveInstallmentEntry");
 			mySQLDatabase.executeSQLCommand("SaveMonthlyBudgets");
 			mySQLDatabase.executeSQLCommand("SaveDefaultBudget");
 		}
@@ -609,11 +674,12 @@ public class GeneralLedger {
 
 						while (rs.next()) {
 							System.out.println(rs.getString(3));
-							if (rs.getString(3).equals("account_list"))   { SQLTablesExist[0] = true; }
-							if (rs.getString(3).equals("general_ledger")) { SQLTablesExist[1] = true; }
-							if (rs.getString(3).equals("monthly_budget")) { SQLTablesExist[2] = true; }
-							if (rs.getString(3).equals("default_budget")) { SQLTablesExist[3] = true; }
-							if (rs.getString(3).equals("repeat_entry"))   { SQLTablesExist[4] = true; }
+							if (rs.getString(3).equals("account_list"))     { SQLTablesExist[0] = true; }
+							if (rs.getString(3).equals("general_ledger"))   { SQLTablesExist[1] = true; }
+							if (rs.getString(3).equals("monthly_budget"))   { SQLTablesExist[2] = true; }
+							if (rs.getString(3).equals("default_budget"))   { SQLTablesExist[3] = true; }
+							if (rs.getString(3).equals("repeat_entry"))     { SQLTablesExist[4] = true; }
+							if (rs.getString(3).equals("installment_entry")){ SQLTablesExist[5] = true; }
 						}	
 					} catch (SQLException e) {
 						// TODO Auto-generated catch block
@@ -624,7 +690,6 @@ public class GeneralLedger {
 				for (int i = 0; i < statementCnt; i++) {
 					Statement statement = null;
 					try {
-
 						statement = connection.createStatement();
 
 						// get SQL command to execute
@@ -696,7 +761,9 @@ public class GeneralLedger {
 			if (commandName.equals("LoadRepeatEntry")) {
 				statementList.add("SELECT * FROM `repeat_entry`");
 			}
-
+			if (commandName.equals("LoadInstallmentEntry")) {
+				statementList.add("SELECT * FROM `installment_entry`");
+			}
 			if (commandName.equals("LoadMonthlyBudgets")) {
 				statementList.add("SELECT * FROM `monthly_budget`");
 			}
@@ -708,6 +775,7 @@ public class GeneralLedger {
 				statementList.add("TRUNCATE `account_list`");
 				statementList.add("TRUNCATE `general_ledger`");
 				statementList.add("TRUNCATE `repeat_entry`");
+				statementList.add("TRUNCATE `installment_entry`");
 				statementList.add("TRUNCATE `monthly_budget`");
 				statementList.add("TRUNCATE `default_budget`");
 			}
@@ -739,7 +807,7 @@ public class GeneralLedger {
 			}
 
 			// no list required, just need a dummy list so we can count the number of iterations
-			if (commandName.equals("SaveSingleEntries")) {
+			if (commandName.equals("SaveSingleEntry")) {
 				// number of statements = number of single entries in ledger so make a giant list of all the SingleEntry data from all months in the general ledger
 				ArrayList<SingleEntry> rawEntryList = entryData.getSingleEntryList();
 				for (SingleEntry tmpEntry : rawEntryList){
@@ -753,7 +821,7 @@ public class GeneralLedger {
 					tmpDesc = tmpDesc.replace("'", "''"); // replace single quotes with '' to make it compatible with SQL database
 					String tmpAccount = tmpEntry.getAccount().getAccountName();
 					tmpAccount = tmpAccount.replace("'", "''"); // replace single quotes with '' to make it compatible with SQL database
-					BigDecimal tmpAmount = tmpEntry.getAmount();
+					BigDecimal tmpAmount = tmpEntry.getMonthlyAmount();
 					// intentionally ignore AUTONUM column which auto-generates an ID for this row
 					String tmpStatement = "INSERT INTO general_ledger (DATE, DESCRIPTION, ACCOUNT, AMOUNT) ";
 					tmpStatement += "VALUES ('"+tmpDate+"', '"+tmpDesc+"', '"+tmpAccount+"', '"+tmpAmount+"')";
@@ -762,9 +830,9 @@ public class GeneralLedger {
 			}
 
 			// no list required, just need a dummy list so we can count the number of iterations
-			if (commandName.equals("SaveRepeatEntries")) {
+			if (commandName.equals("SaveRepeatEntry")) {
 				// number of statements = number of single entries in ledger so make a giant list of all the SingleEntry data from all months in the general ledger
-				ArrayList<RepeatingEntry> rawEntryList = entryData.getRepeatingEntryList();
+				ArrayList<RepeatingEntry> rawEntryList = entryData.getRepeatingEntryList(null);
 				for (RepeatingEntry tmpEntry : rawEntryList){
 					// extract data from RepeatingEntry object
 					JDateTime startDate = tmpEntry.getStartDate();
@@ -781,9 +849,37 @@ public class GeneralLedger {
 					tmpDesc = tmpDesc.replace("'", "''"); // replace single quotes with '' to make it compatible with SQL database
 					String tmpAccount = tmpEntry.getAccount().getAccountName();
 					tmpAccount = tmpAccount.replace("'", "''"); // replace single quotes with '' to make it compatible with SQL database
-					BigDecimal tmpAmount = tmpEntry.getAmount();
+					BigDecimal tmpAmount = tmpEntry.getMonthlyAmount();
 					// intentionally ignore AUTONUM column which auto-generates an ID for this row
 					String tmpStatement = "INSERT INTO repeat_entry (STARTDATE, ENDDATE, DESCRIPTION, ACCOUNT, AMOUNT) ";
+					tmpStatement += "VALUES ('"+tmpStartDate+"', '"+tmpEndDate+"', '"+tmpDesc+"', '"+tmpAccount+"', '"+tmpAmount+"')";
+					statementList.add(tmpStatement);
+				}
+			}
+
+			// no list required, just need a dummy list so we can count the number of iterations
+			if (commandName.equals("SaveInstallmentEntry")) {
+				// number of statements = number of single entries in ledger so make a giant list of all the SingleEntry data from all months in the general ledger
+				ArrayList<InstallmentEntry> rawEntryList = entryData.getInstallmentEntryList(null);
+				for (InstallmentEntry tmpEntry : rawEntryList){
+					// extract data from InstallmentEntry object
+					JDateTime startDate = tmpEntry.getStartDate();
+					int day = startDate.getDay();
+					int month = startDate.getMonth();
+					int year = startDate.getYear();
+					String tmpStartDate = (year  + "-" + month + "-" + day);
+					JDateTime endDate = tmpEntry.getEndDate();
+					day = endDate.getDay();
+					month = endDate.getMonth();
+					year = endDate.getYear();
+					String tmpEndDate = (year  + "-" + month + "-" + day);
+					String tmpDesc = tmpEntry.getDesc();
+					tmpDesc = tmpDesc.replace("'", "''"); // replace single quotes with '' to make it compatible with SQL database
+					String tmpAccount = tmpEntry.getAccount().getAccountName();
+					tmpAccount = tmpAccount.replace("'", "''"); // replace single quotes with '' to make it compatible with SQL database
+					BigDecimal tmpAmount = tmpEntry.getMonthlyAmount();
+					// intentionally ignore AUTONUM column which auto-generates an ID for this row
+					String tmpStatement = "INSERT INTO installment_entry (STARTDATE, ENDDATE, DESCRIPTION, ACCOUNT, AMOUNT) ";
 					tmpStatement += "VALUES ('"+tmpStartDate+"', '"+tmpEndDate+"', '"+tmpDesc+"', '"+tmpAccount+"', '"+tmpAmount+"')";
 					statementList.add(tmpStatement);
 				}
@@ -877,6 +973,18 @@ public class GeneralLedger {
 					tmpStatement += ");";
 				}
 
+				if (tableNbr.equals("5")) {
+					tmpStatement = "CREATE TABLE installment_entry (";
+					tmpStatement += " autonum INT(100) NOT NULL AUTO_INCREMENT, ";
+					tmpStatement += " description VARCHAR(100) DEFAULT NULL,";
+					tmpStatement += " startdate date DEFAULT NULL, ";
+					tmpStatement += " enddate date DEFAULT NULL, ";
+					tmpStatement += " account VARCHAR(25) DEFAULT NULL,";
+					tmpStatement += " amount float DEFAULT NULL,";
+					tmpStatement += " PRIMARY KEY (autonum)";
+					tmpStatement += ");";
+				}
+
 				if (!tmpStatement.equals("")) {
 					statementList.add(tmpStatement);	
 				}
@@ -897,7 +1005,7 @@ public class GeneralLedger {
 				commandType = "ReadTables";
 			} else {
 				if ((commandName.equals("EraseDatabase")) || (commandName.equals("SaveAccountList") )
-						|| (commandName.equals("SaveDefaultBudget")) || (commandName.equals("SaveSingleEntries")) || (commandName.equals("SaveRepeatEntries")) 
+						|| (commandName.equals("SaveDefaultBudget")) || (commandName.equals("SaveSingleEntry")) || (commandName.equals("SaveInstallmentEntry")) || (commandName.equals("SaveRepeatEntry"))
 						|| (commandName.equals("SaveMonthlyBudgets"))  || (commandName.length() > 14 && commandName.substring(0,14).equals("CreateSQLTable"))) {
 					commandType = "ExecuteUpdate";
 				} else {
@@ -929,6 +1037,7 @@ public class GeneralLedger {
 					boolean isInBudget = (tmpIsInBudget.equals("Y"));
 					addAccount(accountName, accountDesc, isAnExpense, isInBudget, false, BigDecimal.ZERO);
 				}
+				
 				if (commandName.equals("LoadMonthlyBudgets")) {
 					// ignore AUTONUM column at beginning of MONTHLY_BUDGET table
 					String stringMonth = resultSet.getString("MONTH");
@@ -944,6 +1053,7 @@ public class GeneralLedger {
 					budgetAmount = budgetAmount.setScale(2, BigDecimal.ROUND_CEILING);
 					addMonthlyBudgetAccount(budgetMonth, budgetYear, budgetAccount, budgetAmount);
 				}
+				
 				if (commandName.equals("LoadDefaultBudget")) {
 					String stringAccount = resultSet.getString("ACCOUNT");
 					stringAccount = stringAccount.replace("''", "'"); // replace single quotes with '' to make it compatible with SQL database
@@ -954,6 +1064,7 @@ public class GeneralLedger {
 					budgetAmount = budgetAmount.setScale(2, BigDecimal.ROUND_CEILING);
 					addDefaultBudgetAccount(budgetAccount, budgetAmount);
 				}
+				
 				if (commandName.equals("LoadSingleEntry")) {
 					// ignore AUTONUM column at beginning of GENERAL_LEDGER table
 					String stringDate = resultSet.getString("DATE");
@@ -977,6 +1088,7 @@ public class GeneralLedger {
 					}
 					addSingleEntry(entryDate, entryDesc, entryAccount, entryAmount);
 				}
+				
 				if (commandName.equals("LoadRepeatEntry")) {
 					// ignore AUTONUM column at beginning of REPEAT_ENTRY table
 					String stringDate = resultSet.getString("STARTDATE");
@@ -1007,6 +1119,38 @@ public class GeneralLedger {
 					}
 					addRepeatingEntry(startDate, endDate, entryDesc, entryAccount, entryAmount);
 				}
+				
+				if (commandName.equals("LoadInstallmentEntry")) {
+					// ignore AUTONUM column at beginning of INSTALLMENT_ENTRY table
+					String stringDate = resultSet.getString("STARTDATE");
+					// convert date from YYYY-MM-DD string into a JDateTime object
+					String parts[] = stringDate.split("-");
+					int year = Integer.parseInt(parts[0]);
+					int month = Integer.parseInt(parts[1]);
+					int day = Integer.parseInt(parts[2]);
+					JDateTime startDate = new JDateTime(year, month, day);
+					stringDate = resultSet.getString("ENDDATE");
+					// convert date from YYYY-MM-DD string into a JDateTime object
+					parts = stringDate.split("-");
+					year = Integer.parseInt(parts[0]);
+					month = Integer.parseInt(parts[1]);
+					day = Integer.parseInt(parts[2]);
+					JDateTime endDate = new JDateTime(year, month, day);
+					String entryDesc = resultSet.getString("DESCRIPTION");	
+					entryDesc = entryDesc.replace("''", "'"); // replace single quotes with '' to make it compatible with SQL database
+					String stringAccount = resultSet.getString("ACCOUNT");	
+					stringAccount = stringAccount.replace("''", "'"); // replace single quotes with '' to make it compatible with SQL database
+					Account entryAccount = getAccount(stringAccount);
+					String stringAmount  = resultSet.getString("AMOUNT");
+					BigDecimal entryAmount = new BigDecimal(stringAmount);
+					entryAmount = entryAmount.setScale(2, BigDecimal.ROUND_CEILING);
+					// if this is an expense, multiple amount by -1 before entering into database
+					if (entryAccount.getIsAnExpense()) {
+						entryAmount = entryAmount.multiply(NEGATIVE);
+					}
+					addInstallmentEntry(startDate, endDate, entryDesc, entryAccount, entryAmount);
+				}
+				
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

@@ -86,7 +86,7 @@ public class TestBudget {
 
 				//installment entries
 				if (entryType.toUpperCase().equals("I")) {
-					System.out.println("Installment entries aren't functional yet");
+					addInstallmentEntry();
 				}
 			}
 
@@ -107,7 +107,7 @@ public class TestBudget {
 
 				//installment entries
 				if (entryType.toUpperCase().equals("I")) {
-					System.out.println("Installment entries aren't functional yet");
+					deleteInstallmentEntry();
 				}
 			}
 
@@ -130,7 +130,7 @@ public class TestBudget {
 
 				//installment entries
 				if (entryType.toUpperCase().equals("I")) {
-					System.out.println("Installment entries aren't functional yet");
+					updateInstallmentEntry();
 				}
 			} 
 
@@ -253,6 +253,38 @@ public class TestBudget {
 		} catch (IllegalArgumentException e) {
 			System.out.println(e);	
 		} 
+	}
+	
+	/**
+	 * This allows the user to add a installment entry to the ledger
+	 */
+	private static void addInstallmentEntry() {
+		// enter start date for entry
+		String checkForEntries = "";
+		JDateTime startDate = chooseDate("Enter Start Date of Installment Entries (or leave blank for all months):", ALLOW_BLANK_INPUT, checkForEntries);
+
+		// enter end date for entry
+		JDateTime endDate = chooseDate("Enter End Date of Installment Entries (or leave blank for all months):", ALLOW_BLANK_INPUT, checkForEntries);
+
+		// enter description
+		System.out.println("Enter Entry Desc:");
+		String inputDesc = myInputScanner.nextLine();
+
+		// select account
+		Account inputAcct = null;
+		try {
+			inputAcct = chooseAccount("", ALLOW_BLANK_INPUT);
+			if (inputAcct == null) return;
+		} catch (IllegalArgumentException e) {
+			System.out.println("Error: Database has no accounts to choose from. Aborting input.");
+			return;
+		}
+		// enter amount
+		System.out.println("Enter Total Amount:");
+		BigDecimal inputAmt = inputAmount(ALLOW_BLANK_INPUT);
+		if (inputAmt == null) return;
+
+		myGeneralLedger.addInstallmentEntry(startDate, endDate, inputDesc, inputAcct, inputAmt);
 	}
 
 	/**
@@ -557,6 +589,42 @@ public class TestBudget {
 		}
 	}
 
+
+	/** 
+	 * This allows the user to delete a installment entry from the ledger
+	 */
+	private static void deleteInstallmentEntry() {
+		String checkForEntries = "R";
+		JDateTime deleteMonth = chooseDate("Enter Month To Display Installment Entries For or leave blank for all months (MM/DD/YYYY):", ALLOW_BLANK_INPUT, checkForEntries);
+
+		if (deleteMonth == null) {
+			System.out.println("List of all the installment entries");
+			PrintLedger.printInstallmentEntries(myGeneralLedger, null);
+		} else {
+			System.out.println("List of all the installment entries for month" + convertDatetoString(deleteMonth));
+			PrintLedger.printInstallmentEntries(myGeneralLedger,deleteMonth);
+		}
+
+		System.out.println("Enter index of which entry for " + convertDatetoString(deleteMonth) + " that you want to delete: (starting with 1)");
+		Integer deleteIndex = inputNumericSelection(ALLOW_BLANK_INPUT);
+		if (deleteIndex == null) return;
+
+		int entryCnt = myGeneralLedger.getInstallmentEntryList(deleteMonth).size();
+		if ((deleteIndex > 0) && (deleteIndex <= entryCnt)) {
+			try {
+				// get description of installment entry we want to delete, because that is how we index the array of installment entries
+				InstallmentEntry tmpRepeatEntry = null;
+				tmpRepeatEntry = myGeneralLedger.getInstallmentEntryList(deleteMonth).get(deleteIndex-1);	
+				String deleteEntryDesc = tmpRepeatEntry.getDesc();
+				myGeneralLedger.deleteInstallmentEntry(deleteEntryDesc);
+			} catch (IllegalArgumentException e) {
+				System.out.println(e);
+			}
+		} else {
+			System.out.println("Cannot delete that entry, this month only has " + entryCnt + " installment entries in it.");
+		}
+	}
+
 	/** 
 	 * This allows the user to delete a repeating entry from the ledger
 	 */
@@ -566,7 +634,7 @@ public class TestBudget {
 
 		if (deleteMonth == null) {
 			System.out.println("List of all the repeating entries");
-			PrintLedger.printRepeatingEntries(myGeneralLedger);
+			PrintLedger.printRepeatingEntries(myGeneralLedger, null);
 		} else {
 			System.out.println("List of all the repeating entries for month" + convertDatetoString(deleteMonth));
 			PrintLedger.printRepeatingEntries(myGeneralLedger,deleteMonth);
@@ -581,11 +649,7 @@ public class TestBudget {
 			try {
 				// get description of repeating entry we want to delete, because that is how we index the array of repeating entries
 				RepeatingEntry tmpRepeatEntry = null;
-				if (deleteMonth != null) {
-					tmpRepeatEntry = myGeneralLedger.getRepeatingEntryList(deleteMonth).get(deleteIndex-1);
-				} else {
-					tmpRepeatEntry = myGeneralLedger.getRepeatingEntryList().get(deleteIndex-1);
-				}
+				tmpRepeatEntry = myGeneralLedger.getRepeatingEntryList(deleteMonth).get(deleteIndex-1);	
 				String deleteEntryDesc = tmpRepeatEntry.getDesc();
 				myGeneralLedger.deleteRepeatingEntry(deleteEntryDesc);
 			} catch (IllegalArgumentException e) {
@@ -700,11 +764,14 @@ public class TestBudget {
 	 */
 	private static void printEntireLedger() {
 		try {
-			System.out.println("Single Entries");	
+			System.out.println("Single Entries:");	
 			PrintLedger.printSingleEntries(myGeneralLedger);
 			System.out.println("");	
 			System.out.println("Repeating Entries:");	
-			PrintLedger.printRepeatingEntries(myGeneralLedger);
+			PrintLedger.printRepeatingEntries(myGeneralLedger, null);
+			System.out.println("");	
+			System.out.println("Installment Entries:");	
+			PrintLedger.printInstallmentEntries(myGeneralLedger, null);
 		} catch (IllegalArgumentException e) {
 			System.out.println(e);	
 		} 
@@ -728,6 +795,91 @@ public class TestBudget {
 			System.out.println(e);	
 		} 
 	}
+	
+	/** 
+	 * This allows the user to update an installment entry in the ledger
+	 */
+	private static void updateInstallmentEntry() {
+		System.out.println("Do you want to see all the installment entries for a specific month or see all installment entries?");
+		String checkForEntries = "R";
+		JDateTime updateMonth = chooseDate("Enter Date of month to see installment entries for, or leave blank for all installment entires (MM/DD/YYYY):", ALLOW_BLANK_INPUT, checkForEntries);
+
+		if (updateMonth == null) {
+			System.out.println("List of all the installment entries");
+			PrintLedger.printInstallmentEntries(myGeneralLedger, null);
+		} else {
+			System.out.println("List of all the installment entries for month" + convertDatetoString(updateMonth));
+			PrintLedger.printInstallmentEntries(myGeneralLedger,updateMonth);
+		}
+
+		System.out.println("Enter index of which entry for " + convertDatetoString(updateMonth) + " that you want to update: (starting with 1)");
+		Integer updateIndex = inputNumericSelection(ALLOW_BLANK_INPUT);
+		if (updateIndex == null) return;
+
+		InstallmentEntry tmpEntry;
+		tmpEntry = myGeneralLedger.getInstallmentEntryList(updateMonth).get(updateIndex-1);			
+
+		String oldDesc = tmpEntry.getDesc();
+		JDateTime oldStartDate = tmpEntry.getStartDate();
+		JDateTime oldEndDate = tmpEntry.getEndDate();
+		Account oldAcct = tmpEntry.getAccount();
+		BigDecimal oldAmt = tmpEntry.getMonthlyAmount();
+
+		String newDesc;
+		JDateTime newStartDate;
+		JDateTime newEndDate;
+		Account newAcct;
+		BigDecimal newAmt;
+
+		System.out.println("Old description is " + oldDesc);
+		System.out.println("Enter new description or leave blank to keep old description:");
+		newDesc = myInputScanner.nextLine();
+		if (newDesc == "") {
+			newDesc = oldDesc;
+		}
+
+		System.out.println("Old start date of installment entry is " + convertDatetoString(oldStartDate));
+		System.out.println("Enter new date or leave blank to keep old date:");
+		String tmpDate = myInputScanner.nextLine();
+		if (tmpDate.equals("")) {
+			newStartDate = oldStartDate;
+		} else {
+			newStartDate = convertStringToDate(tmpDate);
+		}
+
+		System.out.println("Old end date of installment entry is " + convertDatetoString(oldEndDate));
+		System.out.println("Enter new date or leave blank to keep old date:");
+		tmpDate = myInputScanner.nextLine();
+		if (tmpDate.equals("")) {
+			newEndDate = oldEndDate;
+		} else {
+			newEndDate = convertStringToDate(tmpDate);
+		}
+
+		System.out.println("Old account is " + oldAcct.getAccountName());
+		try {
+			newAcct = chooseAccount("Enter new account or leave blank to keep old account:", ALLOW_BLANK_INPUT);
+		} catch (IllegalArgumentException e) {
+			System.out.println("Error: Database has no accounts to choose from. Aborting input.");
+			return;
+		}
+		if (newAcct == null) {
+			newAcct = oldAcct;
+		}
+
+		System.out.println("Old amount is " + oldAmt);
+		System.out.println("Enter new amount or leave blank to keep old amount:");
+		newAmt = inputAmount(ALLOW_BLANK_INPUT);
+		if (newAmt == null) {
+			newAmt = oldAmt;
+		}
+
+		try {
+			myGeneralLedger.updateInstallmentEntry(oldDesc, newStartDate, newEndDate, newDesc, newAcct, newAmt);
+		} catch (IllegalArgumentException e) {
+			System.out.println(e);
+		}
+	}
 
 	/** 
 	 * This allows the user to update a repeating entry in the ledger
@@ -739,7 +891,7 @@ public class TestBudget {
 
 		if (updateMonth == null) {
 			System.out.println("List of all the repeating entries");
-			PrintLedger.printRepeatingEntries(myGeneralLedger);
+			PrintLedger.printRepeatingEntries(myGeneralLedger, null);
 		} else {
 			System.out.println("List of all the repeating entries for month" + convertDatetoString(updateMonth));
 			PrintLedger.printRepeatingEntries(myGeneralLedger,updateMonth);
@@ -750,17 +902,13 @@ public class TestBudget {
 		if (updateIndex == null) return;
 
 		RepeatingEntry tmpEntry;
-		if (updateMonth != null) {
-			tmpEntry = myGeneralLedger.getRepeatingEntryList(updateMonth).get(updateIndex-1);			
-		} else {
-			tmpEntry = myGeneralLedger.getRepeatingEntryList().get(updateIndex-1);
-		}
+		tmpEntry = myGeneralLedger.getRepeatingEntryList(updateMonth).get(updateIndex-1);			
 
 		String oldDesc = tmpEntry.getDesc();
 		JDateTime oldStartDate = tmpEntry.getStartDate();
 		JDateTime oldEndDate = tmpEntry.getEndDate();
 		Account oldAcct = tmpEntry.getAccount();
-		BigDecimal oldAmt = tmpEntry.getAmount();
+		BigDecimal oldAmt = tmpEntry.getMonthlyAmount();
 
 		String newDesc;
 		JDateTime newStartDate;
@@ -851,7 +999,7 @@ public class TestBudget {
 		String oldDesc = tmpEntry.getDesc();
 		JDateTime oldDate = tmpEntry.getDate();
 		Account oldAcct = tmpEntry.getAccount();
-		BigDecimal oldAmt = tmpEntry.getAmount();
+		BigDecimal oldAmt = tmpEntry.getMonthlyAmount();
 
 		String newDesc;
 		JDateTime newDate;
@@ -898,5 +1046,4 @@ public class TestBudget {
 			System.out.println(e);
 		}
 	}
-
 }
